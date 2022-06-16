@@ -1,0 +1,27 @@
+<resources>
+
+    <string name="title_name">MR-230M</string>
+    <string name="app_name">MR-230M</string>
+
+
+    <string name="btn_clearMsg">清空显示信息</string>
+
+    <string name="btn_devVersion">获取读卡器固件版本</string>
+    <string name="btn_SAMId">获取SAMID</string>
+    <string name="btn_cardFullInfo">身份证信息</string>
+
+    <string name="btn_connect">连接读卡器</string>
+    <string name="btn_disconnect">断开读卡器连接</string>
+    <string name="btn_boot">切回boot</string>
+    <string name="btn_findCard">获取卡片ATR(找卡)</string>
+
+    <string name="btn_Sn">获取读卡器序列号</string>
+    <string name="btn_chipSN">获取芯片序列号</string>
+    <string name="btn_SAM">SAM透传指令</string>
+    <string name="btn_SAM_CARD">SAM+身份证透传</string>
+
+    <string name="btn_APDU">APDU指令传输</string>
+
+
+
+</resources>
