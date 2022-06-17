@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.zz.bean.IDCardRecord;
@@ -22,6 +21,8 @@ import org.zz.idcard_hid_driver.zzStringTrans;
 import androidx.appcompat.app.AppCompatActivity;
 
 import static org.zz.bean.IdCardParser.fingerPositionCovert;
+import static org.zz.idcard_hid_driver.ConStant.DATA_BUFFER_SIZE;
+import static org.zz.idcard_hid_driver.ConStant.ERRCODE_SUCCESS;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
             strMsg = strShowMsg + strMsg;
         }
         edit_show_msg.setText(strMsg + "\r\n");
-        ScrollView scrollView_show_msg = (ScrollView) findViewById(R.id.scrollView_show_msg);
-        scrollToBottom(scrollView_show_msg, edit_show_msg);
+//        ScrollView scrollView_show_msg = (ScrollView) findViewById(R.id.scrollView_show_msg);
+//        scrollToBottom(scrollView_show_msg, edit_show_msg);
     }
 
     public static void scrollToBottom(final View scroll, final View inner) {
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     
     public void OnClickUsbConnect(View view){
         int connect = idCardDriver.connect();
-        if (connect==ConStant.ERRCODE_SUCCESS) {
+        if (connect== ERRCODE_SUCCESS) {
             openFlag=true;
             ShowMessage("读卡器连接成功", false);
         }else if(connect==-1000){
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnClickUsbDisconnect(View view){
         int disconnect = idCardDriver.disconnect();
-        if (disconnect==ConStant.ERRCODE_SUCCESS){
+        if (disconnect== ERRCODE_SUCCESS){
             openFlag=false;
             ShowMessage("读卡器断开成功", false);
         }else {
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         IDCardRecord idCardRecord=new IDCardRecord();
         String type = null;
         try {
+
             int re = idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
             if (re == 1 || re == 0) {
                 ImageView img=findViewById(R.id.image_idcard);
@@ -158,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
                 ShowMessage("读卡成功",false);
             }else {
-                ShowMessage("读卡失败，错误码"+ re + (re==128?"  无卡":""),false);
+                ShowMessage("读卡失败，错误码"+ re + (re== ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -234,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         }
         StringBuffer ver=new StringBuffer();
         int nRet = idCardDriver.getVersion(ver);
-        if (nRet==ConStant.ERRCODE_SUCCESS) {
+        if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取读卡器固件版本成功，版本号"+ver, false);
         }else {
             ShowMessage("获取读卡器固件版本失败，错误码："+nRet, false);
@@ -249,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         byte[] samid=new byte[256];
         int nRet=idCardDriver.getSAMID(samid);
         String strSAMID=idCardDriver.SAMIDToNum(samid);
-        if (nRet==ConStant.ERRCODE_SUCCESS) {
+        if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取SAMID成功，SAMID:"+strSAMID, false);
         }else {
             ShowMessage("获取SAMID失败，错误码："+nRet, false);
@@ -262,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         int nRet = idCardDriver.firmwareUpdate();
-        if (nRet==ConStant.ERRCODE_SUCCESS){
+        if (nRet== ERRCODE_SUCCESS){
             ShowMessage("切换BOOT成功", false);
         }else {
             ShowMessage("切换BOOT失败,错误码:"+nRet, false);
@@ -292,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
         }
         StringBuffer sn=new StringBuffer();
         int nRet = idCardDriver.getBoardSN(sn);
-        if (nRet==ConStant.ERRCODE_SUCCESS) {
+        if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取获取读卡器序列号成功，SN:"+sn, false);
         }else {
             ShowMessage("获取获取读卡器序列号失败，错误码："+nRet, false);
@@ -304,9 +306,9 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        byte[] snbuf=new byte[ConStant.DATA_BUFFER_SIZE];
+        byte[] snbuf=new byte[DATA_BUFFER_SIZE];
         int nRet = idCardDriver.getChipSN(snbuf);
-        if (nRet==ConStant.ERRCODE_SUCCESS) {
+        if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取获取芯片序列号成功，SchipSN:"+zzStringTrans.byteToStr(snbuf), false);
         }else {
             ShowMessage("获取获取芯片序列号失败，错误码："+nRet, false);
@@ -331,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("APDU返回："+zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage(),false);
+            ShowMessage(e.getMessage()+"   错误码：  "+ConStant.ERRORCODE_APDU,false);
         }
 
     }
@@ -353,10 +355,10 @@ public class MainActivity extends AppCompatActivity {
             byte[] bytes = idCardDriver.samCommand(cmd);
 
             ShowMessage("SAM透传指令："+zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM+身份证透传指令返回："+zzStringTrans.hex2str(bytes), true);
+            ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage(),false);
+            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
         }
 
     }
@@ -380,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("SAM+身份证透传指令返回："+zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage(),false);
+            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
         }
     }
 

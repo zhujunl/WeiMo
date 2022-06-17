@@ -41,6 +41,14 @@ public class ConStant
     public static int ERRCODE_ID_MSG;
     public static int ERRCODE_ANTENNA_OFF;
 
+    public static int ERRCODE_TRANS;
+    public static int ERRCODE_READCARD;
+    public static int ERRCODE_DEVICE;
+    public static int ERRORCODE_NOCARD;
+    public static int ERRORCODE_CMD;
+    public static int ERRORCODE_APDU;
+    public static int ERRORCODE_SAMID;
+
     static {
         ConStant.DEBUG = false;
         ConStant.VID = 4292;
@@ -80,5 +88,14 @@ public class ConStant
         ConStant.ERRCODE_ID_MSG = -23;
         ConStant.ERRCODE_ANTENNA_OFF = -24;
         ConStant.ERRCODE_NODEVICE = -33;
+
+        ConStant.ERRCODE_TRANS=0x8102;
+        ConStant.ERRCODE_READCARD=0x8E02;
+        ConStant.ERRCODE_DEVICE=0x8101;
+        ConStant. ERRORCODE_NOCARD=0x8D01;
+        ConStant.ERRORCODE_CMD=0x8203;
+        ConStant.ERRORCODE_APDU=0x8D02;
+        ConStant. ERRORCODE_SAMID=0x8E01;
+
     }
 }

@@ -26,21 +26,21 @@
 
     <!-- 提示信息 -->
 
-    <ScrollView
-        android:id="@+id/scrollView_show_msg"
-        android:layout_width="fill_parent"
-        android:layout_height="300px"
-        android:layout_marginLeft="1dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginRight="1dp"
-        android:layout_marginBottom="1dp"
-        android:background="#0f000000"
-        android:scrollbarStyle="outsideOverlay">
+<!--    <ScrollView-->
+<!--        android:id="@+id/scrollView_show_msg"-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="300px"-->
+<!--        android:layout_marginLeft="1dp"-->
+<!--        android:layout_marginTop="1dp"-->
+<!--        android:layout_marginRight="1dp"-->
+<!--        android:layout_marginBottom="1dp"-->
+<!--        android:background="#0f000000"-->
+<!--        android:scrollbarStyle="outsideOverlay">-->
 
         <EditText
             android:id="@+id/edit_show_msg"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="300px"
             android:layout_gravity="center"
             android:layout_marginLeft="13dip"
             android:layout_marginRight="13dip"
@@ -48,13 +48,13 @@
             android:clickable="true"
             android:enabled="true"
             android:focusable="false"
-            android:gravity="top"
+            android:gravity="left|center"
             android:scrollbars="vertical"
             android:singleLine="false"
             android:text=""
             android:textColor="#fff"
             android:textSize="16sp" />
-    </ScrollView>
+<!--    </ScrollView>-->
 
     <View
         android:layout_width="fill_parent"

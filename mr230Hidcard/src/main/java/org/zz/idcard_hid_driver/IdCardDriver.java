@@ -253,7 +253,7 @@ public class IdCardDriver
     public int getSAMID(byte[] samid) {
         final int iRet = this.GetSAMID(samid);
         if (iRet != 144) {
-            return iRet;
+            return ConStant.ERRORCODE_SAMID;
         }
         return ConStant.ERRCODE_SUCCESS;
 //        return this.SAMIDToNum(pucManaInfo);
@@ -321,28 +321,31 @@ public class IdCardDriver
         iRet = this.GetSAMID(pucManaInfo);
         if (iRet != 144) {
             this.AntControl(0);
-            return iRet;
+            return ConStant.ERRCODE_READCARD;
         }
         this.SendMsg("StartFindIDCard");
         iRet = this.StartFindIDCard(pucManaInfo);
         if (iRet != 159) {
             iRet = this.StartFindIDCard(pucManaInfo);
+            if (iRet==128){
+                return ConStant.ERRORCODE_NOCARD;
+            }
             if (iRet != 159) {
-                return iRet;
+                return ConStant.ERRCODE_READCARD;
             }
         }
         this.SendMsg("SelectIDCard");
         iRet = this.SelectIDCard(pucManaInfo);
         if (iRet != 144) {
             this.SendMsg("SelectIDCard iRet=" + iRet);
-            return iRet;
+            return ConStant.ERRCODE_READCARD;
         }
         this.SendMsg("ReadFullMsgUnicode");
         iRet = this.ReadFullMsgUnicode(baseinf, basesize, photo, photosize, fpimg, fpsize);
         if (iRet != 144) {
             this.SendMsg("ReadBaseMsgUnicode,iRet=" + iRet);
             this.AntControl(0);
-            return ConStant.ERRCODE_ID_CARD_READ;
+            return ConStant.ERRCODE_READCARD;
         }
         this.SendMsg("AntControl(0)");
         this.AntControl(0);
@@ -1174,7 +1177,7 @@ public class IdCardDriver
         }
         iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
         if (iRet < 0) {
-            return iRet;
+            return ConStant.ERRCODE_TRANS;
         }
         return 0;
     }
@@ -1192,7 +1195,7 @@ public class IdCardDriver
         SystemClock.sleep(10);
         iRet = this.m_usbBase.recvData(DataBuffer, DataBuffer.length, iTimeOut);
         if (iRet < 0) {
-            return iRet;
+            return ConStant.ERRCODE_TRANS;
         }
         if (DataBuffer[offsize++] != ConStant.CMD_RET_FLAG) {
             return ConStant.ERRCODE_CRC;

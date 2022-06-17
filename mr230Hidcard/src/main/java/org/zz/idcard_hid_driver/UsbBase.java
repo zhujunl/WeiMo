@@ -150,7 +150,7 @@ public class UsbBase
             if (!usbManager.hasPermission(device)) {
                 final PendingIntent pi = PendingIntent.getBroadcast(this.m_ctx, 0, new Intent("com.android.example.USB_PERMISSION"), 0);
                 usbManager.requestPermission(device, pi);
-                return -1000;
+//                return -1000;
             }
             if (vid == device.getVendorId() && pid == device.getProductId()) {
                 this.m_usbDevice = device;
@@ -164,7 +164,7 @@ public class UsbBase
                 return 0;
             }
         }
-        return -100;
+        return ConStant.ERRCODE_DEVICE;
     }
     
     public int sendPacketSize() {
@@ -190,9 +190,9 @@ public class UsbBase
         System.arraycopy(bSendBuf, 0, bSendBufTmp, 0, iSendLen);
         //    Log.e("sendData UsbBase:","m_connection:"+m_connection);
         iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBufTmp, iPackageSize, iTimeOut);
-        Log.e(TAG, "==========================================" );
-        Log.e("sendData:",zzStringTrans.hex2str(bSendBufTmp));
-        Log.e("sendData_iRV:",""+iRV);
+//        Log.e(TAG, "==========================================" );
+//        Log.e("sendData:",zzStringTrans.hex2str(bSendBufTmp));
+//        Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
 
@@ -205,8 +205,8 @@ public class UsbBase
         final byte[] bRecvBufTmp = new byte[iPackageSize];
         //   Log.e("recvData UsbBase:","m_connection:"+m_connection);
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
-        Log.e("recvData_iRV:",""+iRV);
+//        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
+//        Log.e("recvData_iRV:",""+iRV);
         return iRV;
     }
     
