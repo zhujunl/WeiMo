@@ -16,6 +16,7 @@ import org.zz.bean.IDCardRecord;
 import org.zz.bean.IdCardParser;
 import org.zz.idcard_hid_driver.ConStant;
 import org.zz.idcard_hid_driver.IdCardDriver;
+import org.zz.idcard_hid_driver.MXDataCode;
 import org.zz.idcard_hid_driver.zzStringTrans;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -80,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
         if (connect== ERRCODE_SUCCESS) {
             openFlag=true;
             ShowMessage("读卡器连接成功", false);
-        }else if(connect==-1000){
-            idCardDriver.connect();
         }
         else {
             openFlag=false;
@@ -280,9 +279,9 @@ public class MainActivity extends AppCompatActivity {
         byte[] Atr = new byte[64];
         byte[] nRet = idCardDriver.getAtr(Atr);
         if (nRet!=null){
-            ShowMessage("寻卡成功，有卡", false);
+            ShowMessage("获取卡片成功，"+new String(nRet), false);
         }else {
-            ShowMessage("寻卡失败，无卡", false);
+            ShowMessage("获取卡片失败,", false);
         }
 
     }
@@ -328,7 +327,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             byte[] apducmd=trim.getBytes();
+//            byte[] apducmd=new byte[]{0x00, (byte) 0x84,0x00,0x00,0x08};
             byte[] transceiveBuffer = idCardDriver.transceive(apducmd);
+            if (transceiveBuffer==null){
+                ShowMessage("APDU指令传输失败，错误码：  "+ConStant.ERRORCODE_APDU,false);
+                return;
+            }
             ShowMessage("APDU指令数据："+zzStringTrans.hex2str(apducmd), false);
             ShowMessage("APDU返回："+zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
@@ -351,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             //        byte[] cmd=trim.getBytes();
-            byte[] cmd=intToByte(Integer.parseInt(trim));
+            byte[] cmd= MXDataCode.shortToByteArray(Short.parseShort(trim));
             byte[] bytes = idCardDriver.samCommand(cmd);
 
             ShowMessage("SAM透传指令："+zzStringTrans.hex2str(cmd), false);
@@ -375,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
                 ShowMessage("指令未输入",false);
                 return;
             }
-            byte[] cmd=intToByte(Integer.parseInt(trim));
+            byte[] cmd= MXDataCode.shortToByteArray(Short.parseShort(trim));
             byte[] bytes = idCardDriver.samCardCommand(cmd);
 
             ShowMessage("SAM+身份证透传指令："+zzStringTrans.hex2str(cmd), false);
@@ -386,20 +390,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void restartUsb(){
-        idCardDriver.disconnect();
-        int connect = idCardDriver.connect();
-        if (connect==-1000){
-            idCardDriver.connect();
-        }
-    }
-
-    public byte[] intToByte(int n){
-        byte[] b=new byte[2];
-        for (int i=0;i<b.length;i++){
-            b[i]= (byte) (n>>(8-i*8));
-        }
-        return b;
-    }
 
 }

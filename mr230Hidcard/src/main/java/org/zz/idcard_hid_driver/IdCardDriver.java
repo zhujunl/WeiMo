@@ -361,7 +361,12 @@ public class IdCardDriver
      * */
     public byte[] transceive(byte[] apducmd){
         byte[] out=new byte[512];
+        byte[] Atr=new byte[64];
         int iRet = ConStant.ERRCODE_SUCCESS;
+        iRet = this.GetAtr(Atr);
+        if (iRet != 144) {
+            return null;
+        }
         iRet=APDU(apducmd,out);
         return out;
     }

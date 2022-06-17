@@ -42,7 +42,7 @@ public class MXDataCode
     public static byte[] shortToByteArray(final short value) {
         final byte[] b = new byte[2];
         for (int i = 0; i < 2; ++i) {
-            final int offset = i * 8;
+            final int offset =8- i * 8;
             b[i] = (byte)(value >> offset & 0xFF);
         }
         return b;

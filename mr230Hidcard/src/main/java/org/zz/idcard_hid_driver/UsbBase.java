@@ -190,8 +190,8 @@ public class UsbBase
         System.arraycopy(bSendBuf, 0, bSendBufTmp, 0, iSendLen);
         //    Log.e("sendData UsbBase:","m_connection:"+m_connection);
         iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBufTmp, iPackageSize, iTimeOut);
-//        Log.e(TAG, "==========================================" );
-//        Log.e("sendData:",zzStringTrans.hex2str(bSendBufTmp));
+        Log.e(TAG, "==========================================" );
+        Log.e("sendData:",zzStringTrans.hex2str(bSendBufTmp));
 //        Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
