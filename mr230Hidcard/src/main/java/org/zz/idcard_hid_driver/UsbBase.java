@@ -182,16 +182,16 @@ public class UsbBase
         if (iSendLen > bSendBuf.length) {
             return -101;
         }
-        final int iPackageSize = this.sendPacketSize();
-        if (iSendLen > iPackageSize) {
-            return -101;
-        }
-        final byte[] bSendBufTmp = new byte[iPackageSize];
-        System.arraycopy(bSendBuf, 0, bSendBufTmp, 0, iSendLen);
+//        final int iPackageSize = this.sendPacketSize();
+//        if (iSendLen > iPackageSize) {
+//            return -101;
+//        }
+//        final byte[] bSendBufTmp = new byte[iSendLen];
+//        System.arraycopy(bSendBuf, 0, bSendBufTmp, 0, iSendLen);
         //    Log.e("sendData UsbBase:","m_connection:"+m_connection);
-        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBufTmp, iPackageSize, iTimeOut);
+        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
         Log.e(TAG, "==========================================" );
-        Log.e("sendData:",zzStringTrans.hex2str(bSendBufTmp));
+        Log.e("sendData:",zzStringTrans.hex2str(bSendBuf));
 //        Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
@@ -201,11 +201,11 @@ public class UsbBase
         if (iRecvLen > bRecvBuf.length) {
             return -101;
         }
-        final int iPackageSize = this.recvPacketSize();
-        final byte[] bRecvBufTmp = new byte[iPackageSize];
+//        final int iPackageSize = this.recvPacketSize();
+//        final byte[] bRecvBufTmp = new byte[iPackageSize];
         //   Log.e("recvData UsbBase:","m_connection:"+m_connection);
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-//        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
+        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
 //        Log.e("recvData_iRV:",""+iRV);
         return iRV;
     }

@@ -179,13 +179,13 @@
 
 
                 <Button
-                    android:visibility="invisible"
                     android:id="@+id/btn_clearMsg"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button"
-                    android:text="@string/btn_clearMsg" />
+                    android:onClick="OnClickAu"
+                    android:text="授权" />
             </LinearLayout>
 
             <LinearLayout
@@ -245,5 +245,7 @@
 
 
         </LinearLayout>
+
     </LinearLayout>
+
 </LinearLayout>
