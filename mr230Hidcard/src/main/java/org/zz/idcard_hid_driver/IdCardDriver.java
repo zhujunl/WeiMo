@@ -31,6 +31,7 @@ public class IdCardDriver
     public static short CMD_CHECK;
     public static short CMD_SIGN;
     public static short CMD_INTERNT_READCARD;
+    public static short CMD_INTERNT_READCARD_FACEFINGER;
 
     private static int IMAGE_X;
     private static int IMAGE_Y;
@@ -66,6 +67,7 @@ public class IdCardDriver
         IdCardDriver.CMD_CHECK= (short) 0xA10C;
         IdCardDriver.CMD_SIGN=0x12FE;
         IdCardDriver.CMD_INTERNT_READCARD=0x3020;
+        IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER=0x3021;
 
         IdCardDriver.IMAGE_X = 256;
         IdCardDriver.IMAGE_Y = 360;
@@ -338,15 +340,15 @@ public class IdCardDriver
         }
         this.SendMsg("StartFindIDCard");
         iRet = this.StartFindIDCard(pucManaInfo);
-//        if (iRet != 159) {
-//            iRet = this.StartFindIDCard(pucManaInfo);
-//            if (iRet==128){
-//                return ConStant.ERRORCODE_NOCARD;
-//            }
-//            if (iRet != 159) {
-//                return ConStant.ERRCODE_READCARD;
-//            }
-//        }
+        if (iRet != 159) {
+            iRet = this.StartFindIDCard(pucManaInfo);
+            if (iRet==128){
+                return ConStant.ERRORCODE_NOCARD;
+            }
+            if (iRet != 159) {
+                return ConStant.ERRCODE_READCARD;
+            }
+        }
         this.SendMsg("SelectIDCard");
         iRet = this.SelectIDCard(pucManaInfo);
         if (iRet != 144) {
@@ -412,10 +414,10 @@ public class IdCardDriver
 
     public byte[] samCommand(byte[] cmd,byte[] bSendBuf){
         int lRV = ConStant.ERRCODE_SUCCESS;
-        byte[] out=new byte[512];
-        final byte[] oPackDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
+        byte[] out=new byte[ConStant.CMD_BUFSIZE];
+        final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oPackLen = { oPackDataBuffer.length };
-        final byte[] oRecvDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
+        final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         lRV = this.SendIDCardPack(cmd, bSendBuf, bSendBuf.length, oPackDataBuffer, oPackLen);
@@ -896,7 +898,7 @@ public class IdCardDriver
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_READFULLMSG_CONTROL, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(IdCardDriver.CMD_INTERNT_READCARD, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -1019,7 +1021,7 @@ public class IdCardDriver
     }
 
     int SendIDCardPack(final byte[] IDCardCommandIDAndIDCardparam, final byte[] SendDataBuffer, final int SendLen, final byte[] oPackDataBuffer, final int[] oPackLen) {
-        final byte[] tempBufferData = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
+        final byte[] tempBufferData = new byte[oPackLen[0]];
         int i = 0;
         int offsize = 0;
         byte AddCheck = 0;
@@ -1030,9 +1032,6 @@ public class IdCardDriver
         FlagStart[2] = (FlagStart[1] = -86);
         FlagStart[3] = -106;
         FlagStart[4] = 105;
-        if (SendLen > ConStant.DATA_BUFFER_SIZE_MIN - 10 || SendLen < 0) {
-            return ConStant.ERRCODE_MEMORY_OVER;
-        }
         for (i = 0; i < FlagStart.length; ++i) {
             tempBufferData[offsize + i] = FlagStart[i];
         }
@@ -1047,13 +1046,11 @@ public class IdCardDriver
         for (i = 0; i < dtemp.length; ++i) {
             dtemp[i] = 0;
         }
-//        dtemp[0] = IDCardCommandIDAndIDCardparam[0];
-//        dtemp[1] = IDCardCommandIDAndIDCardparam[1];
         for (i = 0; i < IDCardCommandIDAndIDCardparam.length; ++i) {
             tempBufferData[offsize + i] = IDCardCommandIDAndIDCardparam[i];
         }
         offsize += IDCardCommandIDAndIDCardparam.length;
-        if (SendLen > 0 && SendLen < ConStant.DATA_BUFFER_SIZE_MIN - 10) {
+        if (SendLen > 0 ) {
             for (i = 0; i < SendLen; ++i) {
                 tempBufferData[offsize + i] = SendDataBuffer[i];
             }
@@ -1159,9 +1156,8 @@ public class IdCardDriver
             return iRet;
         }
         final byte[] bResult = { 0 };
-        final byte[] bRecv = new byte[2321];
+        final byte[] bRecv = new byte[3012];
         iRet = this.recvPacket(bResult, bRecv, io_wRecvLength, ConStant.CMD_TIMEOUT);
-        Log.e("bRecv", "bRecv:" + zzStringTrans.hex2str(bRecv));
         if (iRet != 0) {
             this.m_usbBase.closeDev();
             return iRet;
@@ -1214,14 +1210,43 @@ public class IdCardDriver
         int offsize = 0;
         short iCheckSum = 0;
         final byte[] DataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
-        if (iDataLen > 1) {
+        int a=bSendBuf[5];
+        int b=bSendBuf[6];
+        if (a<0){
+            a+=256;
+        }
+        if (b<0){
+            b+=256;
+        }
+        int len=a*256+b+7;
+        int pack=0;
+        pack=len/ConStant.DATA_BUFFER_SIZE;
+        if (pack%ConStant.DATA_BUFFER_SIZE!=0){
+            pack++;
+        }
+        if (iDataLen > 1&&iDataLen<56) {
             for (int i = 0; i < iDataLen; ++i) {
                 DataBuffer[offsize++] = bSendBuf[i];
             }
-        }
-        iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
-        if (iRet < 0) {
-            return ConStant.ERRCODE_TRANS;
+            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+            if (iRet < 0) {
+                return ConStant.ERRCODE_TRANS;
+            }
+        }else if (iDataLen>56){
+            for (int i = 0; i < 56; ++i) {
+                DataBuffer[offsize++] = bSendBuf[i];
+            }
+            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+            if (iRet < 0) {
+                return ConStant.ERRCODE_TRANS;
+            }
+            for (int j=1;j<pack;j++){
+                System.arraycopy(bSendBuf,  56 +(64*(j-1)) , DataBuffer, 0, DataBuffer.length);
+                iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+                if (iRet < 0) {
+                    return ConStant.ERRCODE_TRANS;
+                }
+            }
         }
         return 0;
     }

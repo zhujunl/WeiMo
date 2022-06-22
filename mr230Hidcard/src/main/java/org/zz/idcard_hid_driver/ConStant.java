@@ -9,6 +9,7 @@ public class ConStant
     public static int DATA_BUFFER_SIZE;
     public static int DATA_BUFFER_SIZE_MIN;
     public static int REVC_BUFFER_SIZE_MIN;
+    public static int DATA_BUFFER_SIZE_MAX;
     public static int CMD_BUFSIZE;
     public static int CMD_DATA_BUF_SIZE;
     public static int CMD_TIMEOUT;
@@ -55,8 +56,9 @@ public class ConStant
         ConStant.PID = 7;
         ConStant.SHOW_MSG = 255;
         ConStant.DATA_BUFFER_SIZE = 64;
-        ConStant.DATA_BUFFER_SIZE_MIN = 512;
-        ConStant.REVC_BUFFER_SIZE_MIN = 512;
+        ConStant.DATA_BUFFER_SIZE_MIN = 56;
+        ConStant.DATA_BUFFER_SIZE_MAX = 512;
+        ConStant.REVC_BUFFER_SIZE_MIN = 54;
         ConStant.CMD_BUFSIZE = 8200;
         ConStant.CMD_DATA_BUF_SIZE = 64;
         ConStant.CMD_TIMEOUT = 1000;

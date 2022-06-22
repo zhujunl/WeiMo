@@ -186,6 +186,15 @@
                     android:background="@drawable/button"
                     android:onClick="OnClickAu"
                     android:text="授权" />
+
+                <Button
+                    android:id="@+id/btn_Serialport"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button"
+                    android:onClick="OnClickPort"
+                    android:text="串口" />
             </LinearLayout>
 
             <LinearLayout

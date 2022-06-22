@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import com.miaxis.http.bean.RequestActiveInfo;
 import com.miaxis.http.bean.RequestOnlineAuth;
-import com.miaxis.http.bean.RequestReportIDInfo;
 import com.miaxis.http.bean.ResponseActiveInfo;
 import com.miaxis.http.net.MyRetrofit;
 
@@ -41,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     IdCardDriver idCardDriver;
     private static final int FINGER_DATA_SIZE = 512;
     private boolean openFlag=false;
+    SerialPortUtils serialport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         tittle.setText(BuildConfig.VERSION_NAME);
 
         idCardDriver=new IdCardDriver(this);
+        serialport=new SerialPortUtils();
     }
 
     /**
@@ -90,7 +91,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    
+
+
+    /**
+     * usb
+     * */
     public void OnClickUsbConnect(View view){
         int connect = idCardDriver.connect();
         if (connect== ERRCODE_SUCCESS) {
@@ -435,6 +440,7 @@ public class MainActivity extends AppCompatActivity {
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
                         byte[] aut=MXDataCode.shortToByteArray(IdCardDriver.CMD_AUTHORIZATION);
+                        Log.e(TAG, "authresp_base:" + zzStringTrans.hex2str(authresp_base));
                         byte[] realBytes = idCardDriver.samCommand(aut,authresp_base);
                         ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
                         ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
@@ -464,92 +470,75 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    public void AnalysisCard(byte[] baseinf,int[] basesize,String sign){
-       new Thread(new Runnable() {
-           @Override
-           public void run() {
-//               byte[] pcSAMID=new byte[22];
-//               byte[] pucRin=new byte[16];
-//               byte[] pucT=new byte[32];
-//               //        byte[] pucShortcode=new byte[];
-//               byte[] pucChkDataLenH=new byte[1];
-//               byte[] pucChkDatalenL=new byte[1];
-//               byte[] pucChkData=new byte[112];
-//               byte[] pucSign=new byte[64];
-//               System.arraycopy(baseinf,0,pcSAMID,0,pcSAMID.length);
-//               System.arraycopy(baseinf,pcSAMID.length,pucRin,0,pucRin.length);
-//               System.arraycopy(baseinf,pcSAMID.length+pucRin.length,pucT,0,pucT.length);
-//               pucChkDataLenH[0]=(byte)(pucChkData.length >> 8 & 0xFF);
-//               pucChkDatalenL[0]=(byte)(pucChkData.length & 0xFF);
-//               System.arraycopy(baseinf,pcSAMID.length+pucRin.length+pucT.length,pucChkData,0,pucChkData.length);
-//               System.arraycopy(baseinf,pcSAMID.length+pucRin.length+pucT.length+32+pucChkData.length,pucSign,0,pucSign.length);
-
-               byte[] pcSAMID=new byte[]{0x30, 0x35, 0x32, 0x33, 0x32, 0x30, 0x31, 0x39, 0x30, 0x39, 0x32, 0x36, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x36, 0x34, 0x34};
-               byte[] pucRin=new byte[]{0x32, 0x30, 0x32, 0x30, 0x32, 0x30, 0x32, 0x30, 0x32, 0x30, 0x32, 0x30, 0x32, 0x30, 0x32, 0x30};
-               byte[] pucT=new byte[]{32, 0x00, 0x30, 0x00, 0x30, 0x00, 0x36, 0x00, 0x30, 0x00, 0x32, 0x00, 0x31, 0x00, 0x39, 0x00, 0x32, 0x00, 0x30, 0x00, 0x32, 0x00, 0x36, 0x00, 0x30, 0x00, 0x32, 0x00, 0x31, 0x00, 0x39, 0x00};
-               byte[] pucShortcode=new byte[]{
-//                       0x32,0x30 ,0x31 ,0x35 ,0x35 ,0x35 ,0x33 ,0x35 ,0x21 , (byte) 0xAD, (byte) 0x96,0x3D , (byte) 0xF5, (byte) 0x97,0x13 ,0x57
-                       0x32,0x30 ,0x31 ,0x36 ,0x30 ,0x31 ,0x32 ,0x37 ,0x70 ,0x0C , (byte) 0xD2,0x3C , (byte) 0x82,0x71 , (byte) 0xB5,0x0C
-               };
-               byte[] pucChkDataLenH=new byte[]{0x00};
-               byte[] pucChkDatalenL=new byte[]{0x70};
-               byte[] pucChkData=new byte[]{
-                       0x01, 0x01, 0x01, 0x01, 0x62, 0x34, (byte) 0xe9, 0x29, 0x42, 0x5b,
-                       (byte) 0xbc, 0x39, (byte) 0xac, (byte) 0xbe, 0x33, 0x5e, (byte) 0x88,(byte)  0xe0, (byte) 0xa9, (byte) 0x9b,
-                       (byte) 0xb4, (byte) 0x9f,(byte)  0xab,(byte)  0xa1, (byte) 0xa4, 0x57, (byte) 0x9e, 0x4e, (byte) 0xac,(byte)  0xcc,
-                       (byte) 0xf4, (byte) 0xf7, 0x75, (byte) 0xfc, 0x1d, 0x55, 0x00, (byte) 0xcf,(byte)  0xa8, (byte) 0xf7,
-                       0x14, 0x26, 0x50, (byte) 0xc2, 0x10, (byte) 0xf8, 0x24, 0x6a, (byte) 0xb8, 0x2a,
-                       (byte) 0xa8, 0x09, (byte) 0x98, (byte) 0x9d, (byte) 0xe5, (byte) 0xd6,(byte)  0xa5, (byte) 0xf9, 0x69, 0x6c,
-                       0x0a, 0x5c, (byte) 0x96, 0x01, (byte) 0x94,(byte)  0x85, (byte) 0x87, (byte) 0xf8, 0x00, (byte) 0xd7,
-                       (byte) 0xdc, (byte) 0xe4, 0x08, 0x11, (byte) 0xb9, 0x73, (byte) 0xf3, 0x58, 0x2f, 0x63,
-                       0x37, 0x23, 0x7d, 0x22, 0x6c, 0x00,(byte)  0x94, (byte) 0xdb, 0x73, 0x56,
-                       (byte) 0xe4, 0x31, 0x0d, 0x73, (byte) 0x9f, (byte) 0x89,(byte)  0xfe, 0x55, 0x73, 0x6b,
-                       (byte) 0x8d, (byte) 0xa0, 0x6d, (byte) 0xaa, (byte) 0xe1, (byte) 0x9d, (byte) 0xb0, 0x35, 0x56, 0x48,
-                       0x35, (byte) 0xcf
-               };
-               byte[] pucSign=new byte[]{
-                      0x06, (byte)0xc4, 0x3e, (byte)0x97, 0x43, (byte)0x88, (byte)0xdb, 0x47, 0x70, (byte)0xc8, 0x6e,
-                      0x72,(byte) 0xb3, 0x6d, (byte)0xc8, 0x56,(byte) 0x9d, 0x79, (byte)0xb7, 0x7f, 0x52,(byte) 0x9d,
-                       (byte)0xbf, (byte)0xb2, 0x57, (byte)0xbd, (byte)0x92, 0x24, (byte)0xb2,(byte) 0x84, 0x64, 0x68,(byte) 0x14,
-                       (byte)0xc4,(byte) 0xde, 0x21, (byte)0xa5,(byte) 0xe1, 0x15, (byte)0xa0, (byte)0xb3,(byte) 0xef, 0x6d, (byte)0x87,
-                       0x02,(byte) 0xac,(byte) 0xe4, (byte)0xcb,(byte) 0x9b,(byte) 0xbc, 0x6f, (byte)0x8f, 0x64, 0x09,(byte) 0xfb,
-                       (byte)0x92, (byte)0xa5,(byte) 0x90, (byte)0x91,(byte) 0xed,(byte) 0xcf, 0x6b, 0x52, 0x7d
-               };
+    public void AnalysisCard(byte[] baseinf,String sign){
+        try {
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+                    byte[] pcSAMID=new byte[22];
+                    byte[] pucRin=new byte[16];
+                    byte[] pucT=new byte[32];
+                    byte[] pucShortcode=new byte[16];
+                    byte[] pucChkDataLenH=new byte[1];
+                    byte[] pucChkDatalenL=new byte[1];
+                    byte[] pucSign=new byte[64];
+                    System.arraycopy(baseinf, 11, pcSAMID, 0, pcSAMID.length);
+                    Log.e(TAG, "pcSAMID:" + zzStringTrans.hex2str(pcSAMID));
+                    System.arraycopy(baseinf, 33, pucRin, 0, pucRin.length);
+                    Log.e(TAG, "pucRin:" + zzStringTrans.hex2str(pucRin));
+                    System.arraycopy(baseinf, 49, pucT, 0, pucT.length);
+                    Log.e(TAG, "pucT:" + zzStringTrans.hex2str(pucT));
+                    System.arraycopy(baseinf, 81, pucShortcode, 0, pucShortcode.length);
+                    Log.e(TAG, "pucShortcode:" + zzStringTrans.hex2str(pucShortcode));
+                    System.arraycopy(baseinf, 97, pucChkDataLenH, 0, pucChkDataLenH.length);
+                    Log.e(TAG, "pucChkDataLenH:" + zzStringTrans.hex2str(pucChkDataLenH));
+                    System.arraycopy(baseinf, 98, pucChkDatalenL, 0, pucChkDatalenL.length);
+                    Log.e(TAG, "pucChkDatalenL:" + zzStringTrans.hex2str(pucChkDatalenL));
+                    int a = pucChkDataLenH[0];
+                    int b=pucChkDatalenL[0];
+                    if (a<0){
+                        a+=256;
+                    }
+                    if (b<0){
+                        b+=256;
+                    }
+                    byte[] pucChkData=new byte[a*256+b];
+                    Log.e(TAG, "pucChkData.length:" +pucChkData.length );
+                    System.arraycopy(baseinf, 99, pucChkData, 0, pucChkData.length);
+                    Log.e(TAG, "pucChkData:" + zzStringTrans.hex2str(pucChkData));
+                    System.arraycopy(baseinf, 99+32+pucChkData.length, pucSign, 0, pucSign.length);
+                    Log.e(TAG, "pucSign:" + zzStringTrans.hex2str(pucSign));
 
 
 
+//                    byte[] framebytes=new byte[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+pucChkDataLenH.length+pucChkDatalenL.length+pucSign.length+pucChkData.length];
+//                    System.arraycopy(pcSAMID,0,framebytes,0,pcSAMID.length);
+//                    System.arraycopy(pucRin,0,framebytes,pcSAMID.length,pucRin.length);
+//                    System.arraycopy(pucT,0,framebytes,pcSAMID.length+pucRin.length,pucT.length);
+//                    System.arraycopy(pucShortcode,0,framebytes,pcSAMID.length+pucRin.length+pucT.length,pucShortcode.length);
+//                    framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length]=(byte)(pucChkData.length >> 8 & 0xFF);
+//                    framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+1]=(byte)(pucChkData.length & 0xFF);
+//                    System.arraycopy(pucChkData,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+2,pucChkData.length);
+//                    System.arraycopy(pucSign,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucChkData.length+pucShortcode.length+2,pucSign.length);
+//                    Log.e(TAG, "framebytes:" + zzStringTrans.hex2str(framebytes));
+//
+//                    String framedata = jdkBase64Encode(framebytes);
 
-               Log.e(TAG, "pcSAMID:" +zzStringTrans.hex2str(pcSAMID) );
-               Log.e(TAG, "pucRin:" +zzStringTrans.hex2str(pucRin) );
-               Log.e(TAG, "pucT:" +zzStringTrans.hex2str(pucT) );
-               Log.e(TAG, "pucChkDataLenH:" +zzStringTrans.hex2str(pucChkDataLenH) );
-               Log.e(TAG, "pucChkDatalenL:" +zzStringTrans.hex2str(pucChkDatalenL) );
-               Log.e(TAG, "pucChkData:" +zzStringTrans.hex2str(pucChkData) );
-               Log.e(TAG, "pucSign:" +zzStringTrans.hex2str(pucSign) );
-               byte[] framebytes=new byte[248+pucShortcode.length];
-               System.arraycopy(pcSAMID,0,framebytes,0,pcSAMID.length);
-               System.arraycopy(pucRin,0,framebytes,pcSAMID.length,pucRin.length);
-               System.arraycopy(pucT,0,framebytes,pcSAMID.length+pucRin.length,pucT.length);
-               System.arraycopy(pucShortcode,0,framebytes,pcSAMID.length+pucRin.length+pucT.length,pucShortcode.length);
-               framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length]=(byte)(pucChkData.length >> 8 & 0xFF);
-               framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+1]=(byte)(pucChkData.length & 0xFF);
-               System.arraycopy(pucChkData,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+2,pucChkData.length);
-               System.arraycopy(pucSign,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucChkData.length+pucShortcode.length+2,pucSign.length);
-               Log.e(TAG, "framebytes:" + zzStringTrans.hex2str(framebytes));
-
-               String framedata = jdkBase64Encode(framebytes);
-
-               RequestReportIDInfo.Data data=new RequestReportIDInfo.Data(framedata.trim().replace("\n",""),sign.trim().replace("\n",""));
-               RequestReportIDInfo requestReportIDInfo = new RequestReportIDInfo("","zjzz",data);
-               Log.e(TAG, "requestReportIDInfo:" +requestReportIDInfo.toString() );
-               try {
-                   Response<ResponseActiveInfo> execute = MyRetrofit.getApiService("http://192.168.6.78:8080").RequestIDInfo(requestReportIDInfo).execute();
-                   Log.e(TAG, "execute:" +execute.toString() );
-               } catch (IOException e) {
-                   e.printStackTrace();
-               }
-           }
-       }).start();
+//                    RequestReportIDInfo.Data data=new RequestReportIDInfo.Data(framedata.trim().replace("\n",""),sign.trim().replace("\n",""));
+//                    RequestReportIDInfo requestReportIDInfo = new RequestReportIDInfo("","zjzz",data);
+//                    Log.e(TAG, "requestReportIDInfo:" +requestReportIDInfo.toString() );
+//                    Response<ResponseActiveInfo> execute = null;
+//                    try {
+//                        execute = MyRetrofit.getApiService("http://192.168.6.78:8080").RequestIDInfo(requestReportIDInfo).execute();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    Log.e(TAG, "execute:" +execute.toString() );
+//                }
+//            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -573,8 +562,10 @@ public class MainActivity extends AppCompatActivity {
         idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_CHECK));//0XA10C
         idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_FindCARD_CONTROL));//0X2001
         idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_SELECTCARD_CONTROL));//0X2002
-        idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_INTERNT_READCARD));//0X3020
-//        idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+        byte[] bytes = idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER),IdCardDriver.BSENDBUF);//0X3020
+        String sign = getSign();
+        AnalysisCard(bytes,sign);
+        //        idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
     }
 
     public String AnalysisTran(byte[] tran){
@@ -594,5 +585,11 @@ public class MainActivity extends AppCompatActivity {
     private static byte[] jdkBase64Decode(byte[] bytes) {
         return Base64.decode(bytes,Base64.DEFAULT);
     }
+
+
+    /**
+     * SrtialPort
+     * */
+
 
 }

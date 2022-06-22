@@ -204,9 +204,18 @@ public class UsbBase
 //        final int iPackageSize = this.recvPacketSize();
 //        final byte[] bRecvBufTmp = new byte[iPackageSize];
         //   Log.e("recvData UsbBase:","m_connection:"+m_connection);
+//        Log.e("start_recvData:",zzStringTrans.hex2str(bRecvBuf));
+//
+//        Log.e("start_iRecvLen:",""+iRecvLen);
+//
+//        Log.e("start_iTimeOut:",""+iTimeOut);
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
         Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
-//        Log.e("recvData_iRV:",""+iRV);
+
+//        Log.e("iRecvLen:",""+iRecvLen);
+
+//        Log.e("iTimeOut:",""+iTimeOut);
+        Log.e("recvData_iRV:",""+iRV);
         return iRV;
     }
     
