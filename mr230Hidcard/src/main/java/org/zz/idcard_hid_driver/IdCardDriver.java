@@ -192,7 +192,8 @@ public class IdCardDriver
     /**
      *  获取卡片ATR（找卡）
      * */
-    public byte[] getAtr(final byte[] Atr){
+    public byte[] getAtr(){
+        byte[] Atr = new byte[64];
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.GetAtr(Atr);
         if (iRet != 144) {

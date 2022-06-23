@@ -49,6 +49,8 @@ public class ConStant
     public static int ERRORCODE_CMD;
     public static int ERRORCODE_APDU;
     public static int ERRORCODE_SAMID;
+    public static int ERRORCODE_XOR;
+    public static int ERRORCODE_SUM;
 
     static {
         ConStant.DEBUG = false;
@@ -98,6 +100,8 @@ public class ConStant
         ConStant.ERRORCODE_CMD=0x8203;
         ConStant.ERRORCODE_APDU=0x8D02;
         ConStant. ERRORCODE_SAMID=0x8E01;
+        ConStant.ERRORCODE_XOR=0x8201;
+        ConStant.ERRORCODE_SUM=0x8202;
 
     }
 }
