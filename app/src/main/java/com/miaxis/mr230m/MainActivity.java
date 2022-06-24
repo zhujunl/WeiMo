@@ -1,19 +1,22 @@
 package com.miaxis.mr230m;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.serialport.api.SerialPortHelper;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.miaxis.http.bean.RequestActiveInfo;
-import com.miaxis.http.bean.RequestOnlineAuth;
-import com.miaxis.http.bean.ResponseActiveInfo;
-import com.miaxis.http.net.MyRetrofit;
+import com.miaxis.mr230m.http.bean.RequestActiveInfo;
+import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
+import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
+import com.miaxis.mr230m.http.net.MyRetrofit;
 
 import org.zz.Mr990SwitchStateProxy;
 import org.zz.bean.IDCardRecord;
@@ -29,6 +32,7 @@ import java.io.IOException;
 import androidx.appcompat.app.AppCompatActivity;
 import retrofit2.Response;
 
+import static org.zz.bean.IdCardParser.fingerPositionCovert;
 import static org.zz.idcard_hid_driver.ConStant.DATA_BUFFER_SIZE;
 import static org.zz.idcard_hid_driver.ConStant.ERRCODE_SUCCESS;
 
@@ -40,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int FINGER_DATA_SIZE = 512;
     private boolean openFlag=false;
     private SerialPortHelper mSerialPortHelper;
-    private boolean isUsb=false;
+    private boolean isUsb=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         TextView tittle=findViewById(R.id.text_title);
         tittle.setText(BuildConfig.VERSION_NAME);
+
+        findViewById(R.id.usbRb).setOnClickListener(v -> isUsb=true);
+        findViewById(R.id.serialRb).setOnClickListener(v->isUsb=false);
     }
 
     /**
@@ -98,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
             idCardDriver=new IdCardDriver(this);
             UsbConnect();
         }else {
-            mSerialPortHelper=new SerialPortHelper();
             SerialConnect();
         }
     }
@@ -119,70 +125,14 @@ public class MainActivity extends AppCompatActivity {
         if (isUsb){
             UsbReadIDCardMsg();
         }else {
-            SerialReadIDCardMsg();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SerialReadIDCardMsg();
+                }
+            }).start();
         }
 
-    }
-
-    /**
-     * 中国
-     * */
-    public IDCardRecord IdCardParser(byte[] bCardInfo){
-        IDCardRecord idCardRecord = new IDCardRecord();
-        idCardRecord.setName(IdCardParser.getName(bCardInfo));
-        if(IdCardParser.getGender(bCardInfo).equals("1")){
-            idCardRecord.setSex("男");
-        }else {
-            idCardRecord.setSex("女");
-        }
-        idCardRecord.setNation(TextUtils.isEmpty(IdCardParser.getNation(bCardInfo).trim())?"":IdCardParser.FOLK[Integer.parseInt(IdCardParser.getNation(bCardInfo))-1]);
-        idCardRecord.setBirthday(IdCardParser.getBirthday(bCardInfo));
-        idCardRecord.setAddress(IdCardParser.getAddress(bCardInfo));
-        idCardRecord.setCardNumber(IdCardParser.getCardNum(bCardInfo));
-        idCardRecord.setIssuingAuthority(IdCardParser.getIssuingAuthority(bCardInfo));
-        idCardRecord.setValidateStart(IdCardParser.getStartTime(bCardInfo));
-        idCardRecord.setValidateEnd(IdCardParser.getEndTime(bCardInfo));
-        idCardRecord.setPassNumber(IdCardParser.getPassNum(bCardInfo));
-        idCardRecord.setIssueCount(IdCardParser.getIssueNum(bCardInfo));
-        idCardRecord.setCardType(getCardType(bCardInfo));
-        idCardRecord.setCardBitmap(IdCardParser.getFaceBit(bCardInfo));
-        return idCardRecord;
-    }
-
-    /**
-     * 外国人
-     * */
-    public IDCardRecord IdGreenCardOarser(byte[] bCardInfo ){
-        IDCardRecord idCardRecord = new IDCardRecord();
-        idCardRecord.setName(IdCardParser.getEnglishName(bCardInfo));
-        if(IdCardParser.getEnglishGender(bCardInfo).equals("1")){
-            idCardRecord.setSex("男");
-        }else {
-            idCardRecord.setSex("女");
-        }
-        idCardRecord.setCardNumber(IdCardParser.getCardNum(bCardInfo));
-        idCardRecord.setNation(IdCardParser.getNationality(bCardInfo));
-        idCardRecord.setChineseName(IdCardParser.getChineseName(bCardInfo));
-        idCardRecord.setValidateStart(IdCardParser.getStartTime(bCardInfo));
-        idCardRecord.setValidateEnd(IdCardParser.getEndTime(bCardInfo));
-        idCardRecord.setBirthday(IdCardParser.getEnglishBir(bCardInfo));
-        idCardRecord.setVersion(IdCardParser.getVersion(bCardInfo));
-        idCardRecord.setIssuingAuthority(IdCardParser.getAcceptMatter(bCardInfo));
-        idCardRecord.setCardType(IdCardParser.getCardType(bCardInfo));
-        idCardRecord.setCardBitmap(IdCardParser.getFaceBit(bCardInfo));
-        return idCardRecord;
-    }
-
-    private String getCardType(byte[] idCardData){
-        if(TextUtils.isEmpty(IdCardParser.getCardType(idCardData))){
-            if(TextUtils.isEmpty(IdCardParser.getPassNum(idCardData))&&!TextUtils.isEmpty(IdCardParser.getNation(idCardData))){
-                return "";
-            }else {
-                return "J";
-            }
-        }else {
-            return IdCardParser.getCardType(idCardData);
-        }
     }
 
     public void OnClickDevVersion(View view){
@@ -297,10 +247,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickAu(View view){
+        if (!openFlag){
+            ShowMessage("读卡器未连接",false);
+            return;
+        }
         if (isUsb){
             OnlineAuth();
         }else {
             OnlineAuthSerial();
+        }
+    }
+
+    public void OnClickPort(View view){
+        if (!openFlag){
+            ShowMessage("读卡器未连接",false);
+            return;
+        }
+        if (isUsb){
+            ReadCard();
+        }else {
+            SReadCard();
         }
     }
 
@@ -375,7 +341,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void UsbGetSAMID(){
-
         byte[] samid=new byte[256];
         int nRet=idCardDriver.getSAMID(samid);
         String strSAMID=idCardDriver.SAMIDToNum(samid);
@@ -387,67 +352,71 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void UsbReadIDCardMsg(){
-        ReadCard();
-//        byte[] bCardFullInfo = new byte[256 + 1024 + 1024];
-//        byte[] baseinf=new byte[256];
-//        byte[] photo=new byte[1024];
-//        byte[] fpimg=new byte[1024];
-//        int[] basesize = { 0 };
-//        int[] photosize = { 0 };
-//        int[] fpsize = { 0 };
-//        IDCardRecord idCardRecord=new IDCardRecord();
-//        String type = null;
-//        try {
-//            int re = idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
-//            if (re == 1 || re == 0) {
-//                ImageView img=findViewById(R.id.image_idcard);
-//                Bitmap faceBit = IdCardParser.getBitmap(photo);
-//                img.setImageBitmap(faceBit);
-//                idCardRecord.setCardBitmap(faceBit);
-//                if (re == 0) {
-//                    byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
-//                    byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
-//                    int iLen = 256 + 1024;
-//                    try {
-//                        System.arraycopy(bCardFullInfo, iLen, bFingerData0, 0, bFingerData0.length);
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    iLen += 512;
-//                    try {
-//                        System.arraycopy(bCardFullInfo, iLen, bFingerData1, 0, bFingerData1.length);
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                ShowMessage("读卡成功",false);
-//            }else {
-//                ShowMessage("读卡失败，错误码"+ re + (re== ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        byte[] bCardFullInfo = new byte[256 + 1024 + 1024];
+        byte[] baseinf=new byte[256];
+        byte[] photo=new byte[1024];
+        byte[] fpimg=new byte[1024];
+        int[] basesize = { 0 };
+        int[] photosize = { 0 };
+        int[] fpsize = { 0 };
+        IDCardRecord idCardRecord=new IDCardRecord();
+        String type = null;
+        try {
+            int re = idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+            if (re == 1 || re == 0) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView img=findViewById(R.id.image_idcard);
+                        Bitmap faceBit = IdCardParser.getBitmap(photo);
+                        img.setImageBitmap(faceBit);
+                        idCardRecord.setCardBitmap(faceBit);
+                    }
+                });
+                if (re == 0) {
+                    byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
+                    byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
+                    int iLen = 256 + 1024;
+                    try {
+                        System.arraycopy(bCardFullInfo, iLen, bFingerData0, 0, bFingerData0.length);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    iLen += 512;
+                    try {
+                        System.arraycopy(bCardFullInfo, iLen, bFingerData1, 0, bFingerData1.length);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                ShowMessage("读卡成功",false);
+            }else {
+                ShowMessage("读卡失败，错误码"+ re + (re== ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void UsbSamCommand(){
@@ -565,12 +534,15 @@ public class MainActivity extends AppCompatActivity {
      * 获取签名证书
      * */
     public String  getSign(){
-
         byte[] check= MXDataCode.shortToByteArray(IdCardDriver.CMD_CHECK);
         byte[] check_bytes = idCardDriver.samCommand(check);
+        if (check_bytes==null){
+            return "";
+        }
         if (check_bytes[10]==0x01){
             byte[] sign=MXDataCode.shortToByteArray(IdCardDriver.CMD_SIGN);
             byte[] sign_byte=idCardDriver.samCommand(sign);
+            Log.e(TAG, "sign_byte:" + zzStringTrans.hex2str(sign_byte));
             return  AnalysisTran(sign_byte);
         }else{
 
@@ -621,6 +593,9 @@ public class MainActivity extends AppCompatActivity {
                     if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4)) {
                         System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4, pucP, 0, pucP.length);
                         Log.e(TAG, "pucP:" + zzStringTrans.hex2str(pucP));
+                        ImageView img=findViewById(R.id.image_idcard);
+                                        Bitmap faceBit = IdCardParser.getBitmap(pucP);
+                                        img.setImageBitmap(faceBit);
                     }
                     if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4+1024)) {
                         System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4 + 1024, pucF, 0, pucF.length);
@@ -683,9 +658,6 @@ public class MainActivity extends AppCompatActivity {
         idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_FindCARD_CONTROL));//0X2001
         idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_SELECTCARD_CONTROL));//0X2002
         byte[] bytes = idCardDriver.samCommand(MXDataCode.shortToByteArray(IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER),IdCardDriver.BSENDBUF);//0X3020
-//        String sign = getSign();
-        AnalysisCard(bytes,null);
-        //        idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
     }
 
     public String AnalysisTran(byte[] tran){
@@ -714,15 +686,12 @@ public class MainActivity extends AppCompatActivity {
      * */
 
 
-    public void OnClickPort(View view){
+    void SerialConnect(){
         int i = mr990Driver.zzIDFPControl(Mr990SwitchStateProxy.OPEN);//mr990上电
         Log.e(TAG, "i====" +i );
-
-
-    }
-
-    void SerialConnect(){
         openFlag=true;
+        mSerialPortHelper=new SerialPortHelper();
+        ShowMessage("读卡器连接成功", false);
     }
 
     void SerialDisconnect(){
@@ -788,27 +757,95 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void SerialReadIDCardMsg(){
-//        mSerialPortHelper.readIDCardMsg();
-        SReadCard();
+        byte[] bCardFullInfo = new byte[256 + 1024 + 1024];
+        byte[] baseinf=new byte[256];
+        byte[] photo=new byte[1024];
+        byte[] fpimg=new byte[1024];
+        int[] basesize = { 0 };
+        int[] photosize = { 0 };
+        int[] fpsize = { 0 };
+        IDCardRecord idCardRecord=new IDCardRecord();
+        String type = null;
+        try {
+            int re = mSerialPortHelper.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+            if ( re == 0) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView img=findViewById(R.id.image_idcard);
+                        Bitmap faceBit = IdCardParser.getBitmap(photo);
+                        img.setImageBitmap(faceBit);
+                        idCardRecord.setCardBitmap(faceBit);
+                    }
+                });
+                if (fpsize[0]>0) {
+                    byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
+                    byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
+                    int iLen = 256 + 1024;
+                    try {
+                        System.arraycopy(bCardFullInfo, iLen, bFingerData0, 0, bFingerData0.length);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    iLen += 512;
+                    try {
+                        System.arraycopy(bCardFullInfo, iLen, bFingerData1, 0, bFingerData1.length);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                ShowMessage("读卡成功",false);
+            }else {
+                ShowMessage("读卡失败，错误码"+ re + (re== ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void SerialSamCommand(){
-        try {
-            EditText edit=findViewById(R.id.edit_SAM);
-            String trim = edit.getText().toString().trim();
-            if (TextUtils.isEmpty(trim)){
-                ShowMessage("指令未输入",false);
-                return;
-            }
-            byte[] cmd= MXDataCode.shortToByteArray(Short.parseShort(trim));
-            byte[] bytes = mSerialPortHelper.samCommand(cmd);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    EditText edit=findViewById(R.id.edit_SAM);
+                    String trim = edit.getText().toString().trim();
+                    if (TextUtils.isEmpty(trim)){
+                        ShowMessage("指令未输入",false);
+                        return;
+                    }
+                    byte[] cmd= MXDataCode.shortToByteArray(Short.parseShort(trim));
+                    byte[] bytes = mSerialPortHelper.samCommand(cmd);
 
-            ShowMessage("SAM透传指令："+zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(bytes), true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
-        }
+                    ShowMessage("SAM透传指令："+zzStringTrans.hex2str(cmd), false);
+                    ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(bytes), true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
+                }
+            }
+        }).start();
     }
 
     void SerialSamCardCommand(){
@@ -866,13 +903,16 @@ public class MainActivity extends AppCompatActivity {
      * 联网读卡
      * */
     public void SReadCard(){
-        mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
-        mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
-        mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
-        byte[] bytes = mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
-        //        String sign = getSign();
-        AnalysisCard(bytes,null);
-        //        idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
+                mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
+                mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
+                byte[] bytes = mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
+
+            }
+        }).start();
     }
 
 
@@ -884,7 +924,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    byte[] cmd=MXDataCode.shortToByteArray(IdCardDriver.CMD_APPLY_AUTHORIZATION);
+                    byte[] cmd=MXDataCode.shortToByteArray(mSerialPortHelper.W_APPLY_AUTHORIZATION);
                     byte[] bytes = mSerialPortHelper.samCommand(cmd);
                     String author=AnalysisTranSerial(bytes);
                     RequestOnlineAuth.Data data = new RequestOnlineAuth.Data();
@@ -909,6 +949,21 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * 获取签名证书
+     * */
+    public String  getSerialSign(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mSerialPortHelper.samCommand(MXDataCode.shortToByteArray(mSerialPortHelper.W_CHECK));
+                byte[] sign=MXDataCode.shortToByteArray(mSerialPortHelper.W_SIGN);
+                byte[] bytes = mSerialPortHelper.samCommand(sign);
+                Log.e(TAG, "sign_byte:" + zzStringTrans.hex2str(bytes));
+            }
+        }).start();
+        return null;
+    }
 
     public String AnalysisTranSerial(byte[] tran){
         Log.e(TAG, "tran:" + zzStringTrans.hex2str(tran));

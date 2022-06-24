@@ -9,5 +9,4 @@ dependencyResolutionManagement {
 rootProject.name = "MR230m"
 include ':app'
 include ':mr230Hidcard'
-include ':http'
 include ':serialport'

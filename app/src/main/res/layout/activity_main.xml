@@ -82,6 +82,38 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/usbRb"
+                        android:checked="true"
+                        android:text="usb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/serialRb"
+                        android:text="串口"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </RadioGroup>
+                <Button
+                    android:id="@+id/btn_clearMsg"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button"
+                    android:onClick="OnClickAu"
+                    android:text="授权" />
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -187,14 +219,6 @@
                     android:text="@string/btn_findCard" />
 
 
-                <Button
-                    android:visibility="gone"
-                    android:id="@+id/btn_clearMsg"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:text="@string/btn_clearMsg" />
             </LinearLayout>
 
             <LinearLayout

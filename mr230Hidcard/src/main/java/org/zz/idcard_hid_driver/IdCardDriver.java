@@ -110,7 +110,7 @@ public class IdCardDriver
     }
 
     public String mxGetJarVersion() {
-        final String strVersion = "MIAXIS IdCard Driver V1.0.8.20170605";
+        final String strVersion = "MIAXIS IdCard Driver V1.0.8.20200623";
         return strVersion;
     }
 
@@ -127,6 +127,7 @@ public class IdCardDriver
 
     /**
      * 连接读卡器
+     * @return 0成功其他失败
      * */
     public int connect(){
         int iRet = ConStant.ERRCODE_SUCCESS;
@@ -139,6 +140,7 @@ public class IdCardDriver
 
     /**
      * 断开读卡器连接
+     * @return 0成功其他失败
      * */
     public int disconnect(){
         int iRet = ConStant.ERRCODE_SUCCESS;
@@ -148,6 +150,8 @@ public class IdCardDriver
 
     /**
      * 获取读卡器固件版本
+     * @param ver 输出固件版本
+     * @return 0成功，其他失败
      * */
     public int getVersion(StringBuffer ver) {
         byte[] bVersion=new byte[ConStant.DATA_BUFFER_SIZE];
@@ -163,6 +167,8 @@ public class IdCardDriver
 
     /**
      * 获取读卡器序列号
+     * @param sn  输出读卡器序列号
+     * @return 0成功，其他失败
      * */
     public int getBoardSN(StringBuffer sn){
         byte[] bSn=new byte[ConStant.DATA_BUFFER_SIZE];
@@ -178,6 +184,8 @@ public class IdCardDriver
 
     /**
      * 获取安全芯片序列号
+     * @param snbuf 输出芯片序列号
+     * @return 0成功，其他失败
      * */
     public int getChipSN(byte[] snbuf){
 
@@ -191,6 +199,7 @@ public class IdCardDriver
 
     /**
      *  获取卡片ATR（找卡）
+     * @return Atr 返回应答数据
      * */
     public byte[] getAtr(){
         byte[] Atr = new byte[64];
@@ -204,6 +213,7 @@ public class IdCardDriver
 
     /**
      * 切回boot态
+     * @return 0成功，其他失败
      * */
     public int firmwareUpdate(){
         int iRet = ConStant.ERRCODE_SUCCESS;
@@ -264,6 +274,8 @@ public class IdCardDriver
 
     /**
      * 获取微模块SAMID
+     * @param samid 输出SAMID
+     * @return 0成功，其他失败
      * */
     public int getSAMID(byte[] samid) {
         final int iRet = this.GetSAMID(samid);
@@ -271,7 +283,6 @@ public class IdCardDriver
             return ConStant.ERRORCODE_SAMID;
         }
         return ConStant.ERRCODE_SUCCESS;
-//        return this.SAMIDToNum(pucManaInfo);
     }
 
     public int mxReadCardInfo(final byte[] bCardInfo) {
@@ -323,6 +334,13 @@ public class IdCardDriver
 
     /**
      * 读取身份证数据
+     * @param baseinf     [OUT]基本信息,空间应不小于256字节
+     * @param basesize    [OUT]基本信息,空间应不小于256字节
+     * @param photo       [OUT]照片数据,空间应不小于1024字节
+     * @param photosize   [OUT]照片数据长度
+     * @param fpimg       [OUT]指纹数据,空间应不小于1024字节
+     * @param fpsize      [OUT]指纹数据长度
+     * @return 0成功，其他失败
      * */
     public int readIDCardMsg(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
         this.SendMsg("========================");
@@ -374,6 +392,8 @@ public class IdCardDriver
 
     /**
      * APDU指令传输
+     * @param apducmd [IN]apdu指令数据
+     * @return apdu的响应数据
      * */
     public byte[] transceive(byte[] apducmd){
         byte[] out=new byte[512];
@@ -389,6 +409,8 @@ public class IdCardDriver
 
     /**
      * SAM透传指令
+     * @param cmd   [IN]指令数据
+     * @return 响应数据
      * */
     public byte[] samCommand(byte[] cmd){
         int lRV = ConStant.ERRCODE_SUCCESS;
@@ -437,6 +459,8 @@ public class IdCardDriver
 
     /**
      * SAM+身份证透传指令
+     * @param cmd   [IN]指令数据
+     * @return 响应数据
      * */
     public byte[] samCardCommand(byte[] cmd){
         int lRV = ConStant.ERRCODE_SUCCESS;
@@ -899,7 +923,7 @@ public class IdCardDriver
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_INTERNT_READCARD, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -917,23 +941,26 @@ public class IdCardDriver
             this.SendMsg("RecvIDCardPack lRV=" + lRV);
             return lRV;
         }
+        Log.e("TAG", "oPackDataBuffer:" +zzStringTrans.hex2str(oPackDataBuffer) );
         if (result[0] != 144) {
             this.SendMsg("RecvIDCardPack result[0]=" + result[0]);
             return result[0];
         }
-        for (int i = 0; i < 32; ++i) {
-            pucCHMsg[i] = oPackDataBuffer[i+22+16];
+        puiCHMsgLen[0]=32;
+        System.arraycopy(oPackDataBuffer,39,pucCHMsg,0,puiCHMsgLen[0]);
+        puiPHMsgLen[0]=1024;
+        puiFPMsgLen[0]=1024;
+        int a=oPackDataBuffer[87];
+        int b=oPackDataBuffer[88];
+        if(a<0){
+            a+=256;
         }
-        puiCHMsgLen[0] = 32;
-
-        puiPHMsgLen[0] = oRecvDataBuffer[288]*256+oRecvDataBuffer[289];
-        for (int i = 0; i <  puiPHMsgLen[0]; ++i) {
-            PucPHMsg[i] = oPackDataBuffer[i + 22 + 256 + 2 + 2];
+        if (b<0){
+            b+=256;
         }
-        puiFPMsgLen[0] = oRecvDataBuffer[290] * 256 + oRecvDataBuffer[291];
-        for (int i = 0; i < puiFPMsgLen[0]; ++i) {
-            PucFPMsg[i] = oPackDataBuffer[i + 22 + 256 + 2 + 2 + 1024];
-        }
+        int len=a*256+b;
+        System.arraycopy(oPackDataBuffer,89+len+32+64+4,PucPHMsg,0,puiPHMsgLen[0]);
+        System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,PucFPMsg,0,PucFPMsg[0]);
         return result[0];
     }
 
