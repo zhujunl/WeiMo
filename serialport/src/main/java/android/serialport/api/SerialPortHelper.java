@@ -1,7 +1,6 @@
 package android.serialport.api;
 
 import android.serialport.MXDataCode;
-import android.util.Log;
 
 import java.math.BigInteger;
 
@@ -32,6 +31,7 @@ public class SerialPortHelper {
     public static final short W_APDU= (short) 0xFA91;
     public static final short W_CHECK= (short) 0xA10C;
     public static final short W_SIGN=0x12FE;
+    public static final short W_LOWPOWER=0x6201;
 
     public static final short W_APPLY_AUTHORIZATION= (short) 0xA10D;
 
@@ -51,7 +51,7 @@ public class SerialPortHelper {
      * @param ver   [OUT]固件版本
      * @return 0 = 成功 , 其他 = 失败
      * */
-    public int getVersion(StringBuffer ver){
+    public synchronized int getVersion(StringBuffer ver){
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
         SerialPort serialPort = mSerialPortManager.openSerialPort();
@@ -79,7 +79,7 @@ public class SerialPortHelper {
      * @return 卡片ATR数据
      * */
 
-    public byte[] getAtr(){
+    public synchronized byte[] getAtr(){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
@@ -89,10 +89,10 @@ public class SerialPortHelper {
         }
         re=SendSerialPack(CMD_SERIAL3, CMD_SERIAL_ATR, send, null, 0);
         int size = mSerialPortManager.sendSerialPort(send, recv);
-        byte[] out =new byte[size];
         if (size<0){
             return null;
         }
+        byte[] out =new byte[size];
         re = RecvSerialPack(recv, size, out);
         if (re!=0){
             return null;
@@ -111,7 +111,7 @@ public class SerialPortHelper {
      * @param sn  [OUT]板卡序列号
      * @return 0 = 成功 , 其他 = 失败
      * */
-    public int getBoardSN(StringBuffer sn){
+    public synchronized int getBoardSN(StringBuffer sn){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
@@ -140,7 +140,7 @@ public class SerialPortHelper {
      * @param snbuf    [OUT]安全芯片序列号
      * @return 0 = 成功 , 其他 = 失败；
      * */
-    public int getChipSN(byte[] snbuf){
+    public synchronized int getChipSN(byte[] snbuf){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
@@ -166,7 +166,7 @@ public class SerialPortHelper {
      * @param samid    [OUT]SAMID
      * @return 0 = 成功 , 其他 = 失败；
      * */
-    public int getSAMID(byte[] samid){
+    public synchronized int getSAMID(byte[] samid){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] w=new byte[2];
         byte[] send=new byte[sendSize+w.length];
@@ -202,7 +202,7 @@ public class SerialPortHelper {
      * @param fpsize      [OUT]指纹数据长度
      * @return 0成功，其他失败
      * */
-    public int readIDCardMsg(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
+    public synchronized int readIDCardMsg(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
         int iRet=ConStant.ERRCODE_SUCCESS;
         final byte[] pucManaInfo = new byte[256];
         iRet = this.getSAMID(pucManaInfo);
@@ -226,7 +226,7 @@ public class SerialPortHelper {
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public byte[] samCommand(byte[] cmd){
+    public synchronized byte[] samCommand(byte[] cmd){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[cmd.length+sendSize];
         byte[] recv=new byte[2048];
@@ -275,7 +275,7 @@ public class SerialPortHelper {
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public byte[] samCardCommand(byte[] cmd){
+    public synchronized byte[] samCardCommand(byte[] cmd){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize+cmd.length];
         byte[] recv=new byte[recvSize];
@@ -324,7 +324,7 @@ public class SerialPortHelper {
      * @param apducmd [IN]apdu指令数据
      * @return apdu的响应数据
      * */
-    public byte[] transceive(byte[] apducmd){
+    public synchronized byte[] transceive(byte[] apducmd){
         byte[] out=new byte[512];
         int iRet = ConStant.ERRCODE_SUCCESS;
         byte[] Atr = this.getAtr();
@@ -339,7 +339,7 @@ public class SerialPortHelper {
      * 切回boot态
      * @return 0成功，其他失败
      * */
-    public int firmwareUpdate(){
+    public synchronized int firmwareUpdate(){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] w=new byte[2];
         w[0]=(byte)((byte)(W_SAMID >> 8) & 0xFF);
@@ -359,13 +359,33 @@ public class SerialPortHelper {
         return re;
     }
 
+    /**
+     * 低功耗
+     * @return 0成功，其他失败
+     * */
+    public synchronized int lowPower(){
+        int re=ConStant.ERRCODE_SUCCESS;
+        byte[] w=new byte[2];
+        byte[] send=new byte[sendSize+w.length];
+        byte[] recv=new byte[recvSize];
+        w[0]=(byte)((byte)(W_LOWPOWER >> 8) & 0xFF);
+        w[1]=(byte)((byte)W_LOWPOWER & 0xFF);
+        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        if (serialPort==null){
+            return ConStant.ERRCODE_DEVICE;
+        }
+        re=SendSerialPack(CMD_SERIAL2, CMD_SERIAL_ATR, send, w, 2);
+        int size = mSerialPortManager.sendSerialPort(send, recv);
+        close();
+        return re;
+    }
+
     public void close(){
         mSerialPortManager.closeSerialPort();
     }
 
     int APDU(byte[] apducmd,byte[] out){
         int lRV = ConStant.ERRCODE_SUCCESS;
-        byte[] oPackDataBuffer=new byte[sendSize+apducmd.length];
         final byte[] oRecvDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
         final int[] result = { 0 };
         SerialPort serialPort = mSerialPortManager.openSerialPort();
@@ -373,9 +393,11 @@ public class SerialPortHelper {
             return ConStant.ERRCODE_DEVICE;
         }
         byte[] w=new byte[2+apducmd.length];
+
+        byte[] oPackDataBuffer=new byte[sendSize+w.length];
         w[0]=(byte)((byte)(W_APDU >> 8) & 0xFF);
         w[1]=(byte)((byte)W_APDU & 0xFF);
-        System.arraycopy(apducmd,0,w,0,apducmd.length);
+        System.arraycopy(apducmd,0,w,2,apducmd.length);
         lRV=SendSerialPack(CMD_SERIAL2, CMD_SERIAL_ATR, oPackDataBuffer, w, w.length);
         int size = mSerialPortManager.sendSerialPort(oPackDataBuffer, oRecvDataBuffer);
         if (size<0){
@@ -446,7 +468,6 @@ public class SerialPortHelper {
             return ConStant.ERRCODE_DEVICE;
         }
         int size = mSerialPortManager.sendSerialPort(oPackDataBuffer, oRecvDataBuffer,0);
-        Log.e(TAG, "readcard===" + size);
         if (size<0){
             return size;
         }
@@ -454,7 +475,6 @@ public class SerialPortHelper {
         if (realbyte[2]!=-112){
             return realbyte[2];
         }
-        Log.e(TAG, "real;" +zzStringTrans.hex2str(realbyte) );
         byte[] real=new byte[realbyte.length-3];
         System.arraycopy(realbyte,3,real,0,real.length);
         puiCHMsgLen[0]=32;

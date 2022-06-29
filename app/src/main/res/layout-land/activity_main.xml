@@ -27,9 +27,10 @@
     <!-- 提示信息 -->
 
     <ScrollView
+        android:visibility="gone"
         android:id="@+id/scrollView_show_msg"
         android:layout_width="fill_parent"
-        android:layout_height="150px"
+        android:layout_height="300px"
         android:layout_marginLeft="1dp"
         android:layout_marginTop="1dp"
         android:layout_marginRight="1dp"
@@ -37,24 +38,25 @@
         android:background="#0f000000"
         android:scrollbarStyle="outsideOverlay">
 
-        <EditText
-            android:id="@+id/edit_show_msg"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="13dip"
-            android:layout_marginRight="13dip"
-            android:background="@null"
-            android:clickable="true"
-            android:enabled="true"
-            android:focusable="false"
-            android:gravity="top"
-            android:scrollbars="vertical"
-            android:singleLine="false"
-            android:text=""
-            android:textColor="#fff"
-            android:textSize="16sp" />
+
     </ScrollView>
+    <EditText
+        android:id="@+id/edit_show_msg"
+        android:layout_width="fill_parent"
+        android:layout_height="150px"
+        android:layout_gravity="center"
+        android:layout_marginLeft="13dip"
+        android:layout_marginRight="13dip"
+        android:background="@null"
+        android:clickable="true"
+        android:enabled="true"
+        android:focusable="false"
+        android:gravity="top"
+        android:scrollbars="vertical"
+        android:singleLine="false"
+        android:text=""
+        android:textColor="#fff"
+        android:textSize="16sp" />
 
     <View
         android:layout_width="fill_parent"
@@ -102,6 +104,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 </RadioGroup>
+                <EditText
+                    android:id="@+id/ip_edit"
+                    android:layout_width="220dp"
+                    android:layout_height="wrap_content"/>
                 <Button
                     android:id="@+id/btn_clearMsg"
                     android:layout_width="0dp"
@@ -110,6 +116,12 @@
                     android:background="@drawable/button"
                     android:onClick="OnClickAu"
                     android:text="授权" />
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="低功耗"
+                    android:onClick="OnClickLowPower"
+                    android:background="@drawable/button"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -223,9 +235,29 @@
                 android:layout_height="wrap_content">
                 <EditText
                     android:id="@+id/edit_SAM"
+                    android:visibility="gone"
                     android:inputType="number"
                     android:layout_width="350dp"
                     android:layout_height="wrap_content"/>
+                <RadioGroup
+                    android:layout_width="350dp"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/Sam_nor"
+                        android:checked="true"
+                        android:text="12ff(正常指令)"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/Sam_error"
+                        android:text="12f3(异常指令)"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                </RadioGroup>
                 <Button
                     android:id="@+id/btn_SAM"
                     android:layout_width="0dp"
@@ -240,10 +272,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
                 <EditText
+                    android:visibility="gone"
                     android:id="@+id/edit_SAM_CARD"
                     android:inputType="number"
                     android:layout_width="350dp"
                     android:layout_height="wrap_content"/>
+                <RadioGroup
+                    android:layout_width="350dp"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/SamCard_nor"
+                        android:checked="true"
+                        android:text="12ff(正常指令)"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/SamCard_error"
+                        android:text="12f3(异常指令)"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                </RadioGroup>
                 <Button
                     android:id="@+id/btn_SAM_CARD"
                     android:layout_width="0dp"
@@ -259,9 +311,29 @@
                 android:layout_height="wrap_content">
                 <EditText
                     android:id="@+id/edit_APDU"
+                    android:visibility="gone"
                     android:inputType="number"
                     android:layout_width="350dp"
                     android:layout_height="wrap_content"/>
+                <RadioGroup
+                    android:layout_width="350dp"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/APDU1"
+                        android:checked="true"
+                        android:text="1234"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/APDU2"
+                        android:text="11111"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"/>
+                </RadioGroup>
                 <Button
                     android:id="@+id/btn_APDU"
                     android:layout_width="0dp"
