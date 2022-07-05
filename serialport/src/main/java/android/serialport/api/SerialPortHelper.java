@@ -42,6 +42,8 @@ public class SerialPortHelper {
 
     private SerialPortManager mSerialPortManager;
 
+    private String path="/dev/ttyHSL2";
+
     public SerialPortHelper() {
         mSerialPortManager = new SerialPortManager();
     }
@@ -51,10 +53,10 @@ public class SerialPortHelper {
      * @param ver   [OUT]固件版本
      * @return 0 = 成功 , 其他 = 失败
      * */
-    public synchronized int getVersion(StringBuffer ver){
+    public synchronized int getVersionZ(StringBuffer ver){
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -79,11 +81,11 @@ public class SerialPortHelper {
      * @return 卡片ATR数据
      * */
 
-    public synchronized byte[] getAtr(){
+    public synchronized byte[] getAtrZ(){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return null;
         }
@@ -111,11 +113,11 @@ public class SerialPortHelper {
      * @param sn  [OUT]板卡序列号
      * @return 0 = 成功 , 其他 = 失败
      * */
-    public synchronized int getBoardSN(StringBuffer sn){
+    public synchronized int getBoardSNZ(StringBuffer sn){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -140,11 +142,11 @@ public class SerialPortHelper {
      * @param snbuf    [OUT]安全芯片序列号
      * @return 0 = 成功 , 其他 = 失败；
      * */
-    public synchronized int getChipSN(byte[] snbuf){
+    public synchronized int getChipSNZ(byte[] snbuf){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -166,14 +168,14 @@ public class SerialPortHelper {
      * @param samid    [OUT]SAMID
      * @return 0 = 成功 , 其他 = 失败；
      * */
-    public synchronized int getSAMID(byte[] samid){
+    public synchronized int getSAMIDZ(byte[] samid){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] w=new byte[2];
         byte[] send=new byte[sendSize+w.length];
         byte[] recv=new byte[recvSize];
         w[0]=(byte)((byte)(W_SAMID >> 8) & 0xFF);
         w[1]=(byte)((byte)W_SAMID & 0xFF);
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -202,10 +204,10 @@ public class SerialPortHelper {
      * @param fpsize      [OUT]指纹数据长度
      * @return 0成功，其他失败
      * */
-    public synchronized int readIDCardMsg(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
+    public synchronized int readIDCardMsgZ(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
         int iRet=ConStant.ERRCODE_SUCCESS;
         final byte[] pucManaInfo = new byte[256];
-        iRet = this.getSAMID(pucManaInfo);
+        iRet = this.getSAMIDZ(pucManaInfo);
         iRet = this.StartFindIDCard(pucManaInfo);
         if (iRet!=-97){
             iRet = this.StartFindIDCard(pucManaInfo);
@@ -226,11 +228,11 @@ public class SerialPortHelper {
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public synchronized byte[] samCommand(byte[] cmd){
+    public synchronized byte[] samCommandZ(byte[] cmd){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[cmd.length+sendSize];
         byte[] recv=new byte[2048];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return null;
         }
@@ -244,12 +246,12 @@ public class SerialPortHelper {
         return recv;
     }
 
-    public byte[] samCommand(byte[] cmd,byte[] bSendBuf){
+    public byte[] samCommandZ(byte[] cmd,byte[] bSendBuf){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[ConStant.CMD_BUFSIZE];
         final byte[] oPackDataBuffer = new byte[cmd.length+bSendBuf.length+sendSize];
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return null;
         }
@@ -275,11 +277,11 @@ public class SerialPortHelper {
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public synchronized byte[] samCardCommand(byte[] cmd){
+    public synchronized byte[] samCardCommandZ(byte[] cmd){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] send=new byte[sendSize+cmd.length];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return null;
         }
@@ -293,12 +295,12 @@ public class SerialPortHelper {
         return recv;
     }
 
-    public byte[] samCardCommand(byte[] cmd,byte[] bSendBuf){
+    public byte[] samCardCommandZ(byte[] cmd,byte[] bSendBuf){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[ConStant.CMD_BUFSIZE];
         byte[] oPackDataBuffer=new byte[sendSize+cmd.length];
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return null;
         }
@@ -324,10 +326,10 @@ public class SerialPortHelper {
      * @param apducmd [IN]apdu指令数据
      * @return apdu的响应数据
      * */
-    public synchronized byte[] transceive(byte[] apducmd){
+    public synchronized byte[] transceiveZ(byte[] apducmd){
         byte[] out=new byte[512];
         int iRet = ConStant.ERRCODE_SUCCESS;
-        byte[] Atr = this.getAtr();
+        byte[] Atr = this.getAtrZ();
         if (Atr==null){
             return Atr;
         }
@@ -339,14 +341,14 @@ public class SerialPortHelper {
      * 切回boot态
      * @return 0成功，其他失败
      * */
-    public synchronized int firmwareUpdate(){
+    public synchronized int firmwareUpdateZ(){
         int re=ConStant.ERRCODE_SUCCESS;
         byte[] w=new byte[2];
         w[0]=(byte)((byte)(W_SAMID >> 8) & 0xFF);
         w[1]=(byte)((byte)W_SAMID & 0xFF);
         byte[] send=new byte[sendSize+w.length];
         byte[] recv=new byte[recvSize];
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -370,7 +372,7 @@ public class SerialPortHelper {
         byte[] recv=new byte[recvSize];
         w[0]=(byte)((byte)(W_LOWPOWER >> 8) & 0xFF);
         w[1]=(byte)((byte)W_LOWPOWER & 0xFF);
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -380,7 +382,23 @@ public class SerialPortHelper {
         return re;
     }
 
-    public void close(){
+    public int connectReaderZ(String reader){
+        int lRV = ConStant.ERRCODE_SUCCESS;
+        path=reader;
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
+        if (serialPort==null){
+            return ConStant.ERRCODE_DEVICE;
+        }
+        return lRV;
+    }
+
+    public int disconnectZ(){
+        int lRV = ConStant.ERRCODE_SUCCESS;
+        close();
+        return lRV;
+    }
+
+     void close(){
         mSerialPortManager.closeSerialPort();
     }
 
@@ -388,7 +406,7 @@ public class SerialPortHelper {
         int lRV = ConStant.ERRCODE_SUCCESS;
         final byte[] oRecvDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
         final int[] result = { 0 };
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -418,7 +436,7 @@ public class SerialPortHelper {
         w[0]=(byte)((byte)(W_FindCARD_CONTROL >> 8) & 0xFF);
         w[1]=(byte)((byte)W_FindCARD_CONTROL & 0xFF);
         lRV = SendSerialPack(CMD_SERIAL2, CMD_SERIAL_READ, oPackDataBuffer, w, w.length);
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -440,7 +458,7 @@ public class SerialPortHelper {
         w[0]=(byte)((byte)(W_SELECTCARD_CONTROL >> 8) & 0xFF);
         w[1]=(byte)((byte)W_SELECTCARD_CONTROL & 0xFF);
         lRV = SendSerialPack(CMD_SERIAL2, CMD_SERIAL_READ, oPackDataBuffer, w, w.length);
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }
@@ -463,7 +481,7 @@ public class SerialPortHelper {
         w[1]=(byte)((byte)W_INTERNET_READ & 0xFF);
         System.arraycopy(BSENDBUF,0,w,2,BSENDBUF.length);
         lRV = SendSerialPack(CMD_SERIAL2, CMD_SERIAL_READ, oPackDataBuffer, w, w.length);
-        SerialPort serialPort = mSerialPortManager.openSerialPort();
+        SerialPort serialPort = mSerialPortManager.openSerialPort(path);
         if (serialPort==null){
             return ConStant.ERRCODE_DEVICE;
         }

@@ -1,4 +1,4 @@
-package org.zz.idcard_hid_driver;
+package com.zzreader;
 
 import android.os.Environment;
 

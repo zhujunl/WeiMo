@@ -1,103 +1,8 @@
-package org.zz.idcard_hid_driver;
+package com.zzreader;
 
-import java.math.*;
-
-public class MXDataCode
+public class zzJavaBase64
 {
-    public static byte[] intToByteArray(final int value) {
-        final byte[] b = new byte[4];
-        for (int i = 0; i < 4; ++i) {
-            final int offset = i * 8;
-            b[i] = (byte)(value >> offset & 0xFF);
-        }
-        return b;
-    }
-    
-    public static int byteArrayToInt(final byte[] b, final int offset) {
-        int value = 0;
-        for (int i = 0; i < 4; ++i) {
-            final int shift = i * 8;
-            value += (b[i + offset] & 0xFF) << shift;
-        }
-        return value;
-    }
-    
-    public static BigInteger byteArrayToBigInteger(final byte[] data) {
-        final byte[] temp = new byte[4];
-        for (int i = 0; i < 4; ++i) {
-            temp[i] = data[4 - i - 1];
-        }
-        final BigInteger a = new BigInteger("4294967296");
-        final BigInteger b = new BigInteger(temp);
-        BigInteger value;
-        if (BigInteger.ZERO.compareTo(b) > 0) {
-            value = a.add(b);
-        }
-        else {
-            value = b;
-        }
-        return value;
-    }
-    
-    public static byte[] shortToByteArray(final short value) {
-        final byte[] b = new byte[2];
-        for (int i = 0; i < 2; ++i) {
-            final int offset =8- i * 8;
-            b[i] = (byte)(value >> offset & 0xFF);
-        }
-        return b;
-    }
-    
-    public static short byteArrayToShort(final byte[] b, final int offset) {
-        short value = 0;
-        for (int i = 0; i < 2; ++i) {
-            final int shift = i * 8;
-            value += (short)((b[i + offset] & 0xFF) << shift);
-        }
-        return value;
-    }
-    
-    public static int JUnsigned(final int x) {
-        if (x >= 0) {
-            return x;
-        }
-        return x + 256;
-    }
-    
-    public static void EncData(final byte[] lpRawData, final int nRawLen, final byte[] lpEncData) {
-        int i;
-        int aaa;
-        for (i = 0, i = 0; i < nRawLen; ++i) {
-            aaa = JUnsigned(lpRawData[i]);
-            lpEncData[2 * i] = (byte)((aaa >> 4) + 48);
-            lpEncData[2 * i + 1] = (byte)((aaa & 0xF) + 48);
-        }
-    }
-    
-    public static void DecData(final byte[] lpEncData, final int nRawLen, final byte[] lpRawData) {
-        int i;
-        for (i = 0, i = 0; i < nRawLen; ++i) {
-            lpRawData[i] = (byte)((lpEncData[2 * i] - 48 << 4) + (lpEncData[2 * i + 1] - 48));
-        }
-    }
-    
-    public static String hex2str(final byte[] hex) {
-        final StringBuilder sb = new StringBuilder();
-        for (final byte b : hex) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
-    }
-    
-    public static void HexToAsc(final byte[] lpHexData, final int nHexLength, final byte[] lpAscData) {
-        final String strTmp = hex2str(lpHexData);
-        final byte[] szTmp2 = strTmp.getBytes();
-        for (int i = 0; i < szTmp2.length; ++i) {
-            lpAscData[i] = szTmp2[i];
-        }
-    }
-    
-    public static int JavaBase64Encode(final byte[] pInput, final int inputLen, final byte[] pOutput, final int outputbufsize) {
+    static int JavaBase64Encode(final byte[] pInput, final int inputLen, final byte[] pOutput, final int outputbufsize) {
         int currentin = 0;
         int currentin2 = 0;
         int currentin3 = 0;
@@ -146,7 +51,7 @@ public class MXDataCode
         }
         int i;
         int j;
-        for (i = datalen - 3,  j = encodedatalen - 4; i >= 0; i -= 3, j -= 4) {
+        for (i = datalen - 3,j = encodedatalen - 4; i >= 0; i -= 3, j -= 4) {
             currentin = pInput[i];
             currentin2 = pInput[i + 1];
             currentin3 = pInput[i + 2];
@@ -168,7 +73,7 @@ public class MXDataCode
         return outlen;
     }
     
-    public static int JavaBase64Decode(final byte[] pInput, final int inputLen, final byte[] pOutput) {
+    static int JavaBase64Decode(final byte[] pInput, final int inputLen, final byte[] pOutput) {
         final char np = '\u00ff';
         final char[] decodingTable = new char[256];
         for (int i = 0; i < 256; ++i) {

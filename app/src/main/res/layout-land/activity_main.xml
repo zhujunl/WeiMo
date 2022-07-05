@@ -106,6 +106,7 @@
                 </RadioGroup>
                 <EditText
                     android:id="@+id/ip_edit"
+                    android:text="http://192.168.6.78:8080"
                     android:layout_width="220dp"
                     android:layout_height="wrap_content"/>
                 <Button

@@ -38,9 +38,9 @@ public class SerialPortManager {
      * 打开串口
      * @return serialPort串口对象
      */
-    public SerialPort openSerialPort(){
+    public SerialPort openSerialPort(String path){
         try {
-            serialPort = new SerialPort("/dev/ttyHSL2", 115200);
+            serialPort = new SerialPort(path, 115200);
             this.serialPortStatus = true;
             threadStatus = false; //线程状态
             outputStream = new FileOutputStream(serialPort.getFd());

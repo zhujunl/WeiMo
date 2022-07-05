@@ -1,4 +1,4 @@
-package org.zz.idcard_hid_driver;
+package com.zzreader;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -163,6 +163,23 @@ public class UsbBase
                 this.m_iRecvPackageSize = this.m_inEndpoint.getMaxPacketSize();
                 return 0;
             }
+
+//            if (vid == device.getVendorId() && pid == device.getProductId()) {
+//                if (!usbManager.hasPermission(device)) {
+//                    final PendingIntent pi = PendingIntent.getBroadcast(this.m_ctx, 0, new Intent("com.android.example.USB_PERMISSION"), 0);
+//                    usbManager.requestPermission(device, pi);
+//                    return ConStant.ERRCODE_DEVICE;
+//                }
+//                this.m_usbDevice = device;
+//                this.m_usbInterface = this.m_usbDevice.getInterface(0);
+//                this.m_inEndpoint = this.m_usbInterface.getEndpoint(0);
+//                this.m_outEndpoint = this.m_usbInterface.getEndpoint(1);
+//                this.m_connection = usbManager.openDevice(this.m_usbDevice);
+//                this.m_connection.claimInterface(this.m_usbInterface, true);
+//                this.m_iSendPackageSize = this.m_outEndpoint.getMaxPacketSize();
+//                this.m_iRecvPackageSize = this.m_inEndpoint.getMaxPacketSize();
+//                return 0;
+//            }
         }
         return ConStant.ERRCODE_DEVICE;
     }
@@ -182,10 +199,9 @@ public class UsbBase
         if (iSendLen > bSendBuf.length) {
             return -101;
         }
-
         iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
-//        Log.e(TAG, "==========================================" );
-//        Log.e("sendData:",zzStringTrans.hex2str(bSendBuf));
+        Log.e(TAG, "==========================================" );
+        Log.e("sendData:",zzStringTrans.hex2str(bSendBuf));
 //        Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
@@ -196,7 +212,7 @@ public class UsbBase
             return -101;
         }
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-//        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
+        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
 
 //        Log.e("iRecvLen:",""+iRecvLen);
         return iRV;

@@ -1,6 +1,7 @@
 package com.miaxis.mr230m;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,28 +20,26 @@ import com.miaxis.mr230m.http.bean.RequestActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
 import com.miaxis.mr230m.http.net.MyRetrofit;
+import com.zzreader.ConStant;
+import com.zzreader.ZzReader;
+import com.zzreader.zzStringTrans;
 
-import org.zz.Mr990SwitchStateProxy;
 import org.zz.bean.IDCardRecord;
 import org.zz.bean.IdCardParser;
-import org.zz.idcard_hid_driver.ConStant;
-import org.zz.idcard_hid_driver.IdCardDriver;
-import org.zz.idcard_hid_driver.zzStringTrans;
-import org.zz.mr990Driver;
 
 import java.io.IOException;
 
 import androidx.appcompat.app.AppCompatActivity;
 import retrofit2.Response;
 
+import static com.zzreader.ConStant.ERRCODE_SUCCESS;
 import static org.zz.bean.IdCardParser.fingerPositionCovert;
-import static org.zz.idcard_hid_driver.ConStant.ERRCODE_SUCCESS;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "MainActivity";
 
-    IdCardDriver idCardDriver;
+    ZzReader idCardDriver;
     private static final int FINGER_DATA_SIZE = 512;
     private boolean openFlag=false;
     private SerialPortHelper mSerialPortHelper;
@@ -57,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
         TextView tittle=findViewById(R.id.text_title);
         ip=findViewById(R.id.ip_edit);
         tittle.setText(BuildConfig.VERSION_NAME);
+
+        Intent intent = new Intent("com.miaxis.power");
+        intent.putExtra("type",0x12);
+        intent.putExtra("value",true);
+        sendBroadcast(intent);
 
         findViewById(R.id.usbRb).setOnClickListener(v -> isUsb=true);
         findViewById(R.id.serialRb).setOnClickListener(v->isUsb=false);
@@ -112,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void OnClickUsbConnect(View view){
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
-            idCardDriver=new IdCardDriver(this);
+            idCardDriver=new ZzReader(this);
             UsbConnect();
         }else {
             SerialConnect();
@@ -122,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickUsbDisconnect(View view){
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbDisconnect();
         }else {
@@ -135,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbReadIDCardMsg();
         }else {
@@ -154,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbGetVersion();
         }else {
@@ -167,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbGetSAMID();
         }else {
@@ -180,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbFirmwareUpdate();
         }else {
@@ -194,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbGetAtr();
         }else {
@@ -208,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbGetBoardSN();
         }else {
@@ -221,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
         if (isUsb){
             UsbGetChipSN();
         }else {
@@ -234,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbTransceive();
         }else {
@@ -247,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbSamCommand();
         }else {
@@ -261,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             UsbSamCardCommand();
         }else {
@@ -274,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             OnlineAuth();
         }else {
@@ -287,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        //mProgressDialog.show();
+        mProgressDialog.show();
         if (isUsb){
             ReadCard();
         }else {
@@ -316,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int connect = idCardDriver.connect();
+                int connect = idCardDriver.connectReaderZ("USB");
                 if (connect== ConStant.ERRCODE_SUCCESS) {
                     openFlag=true;
                     ShowMessage("读卡器连接成功", false);
@@ -330,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
 
     void UsbDisconnect(){
         if (openFlag){
-            int disconnect = idCardDriver.disconnect();
+            int disconnect = idCardDriver.disconnectZ ();
             if (disconnect== ConStant.ERRCODE_SUCCESS){
                 openFlag=false;
                 ShowMessage("读卡器断开成功", false);
@@ -341,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void UsbGetAtr(){
-        byte[] nRet = idCardDriver.getAtr();
+        byte[] nRet = idCardDriver.getAtrZ();
         if (nRet!=null){
             ShowMessage("获取卡片成功，"+zzStringTrans.hex2str(nRet), false);
         }else {
@@ -351,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
 
     void UsbGetVersion(){
         StringBuffer ver=new StringBuffer();
-        int nRet = idCardDriver.getVersion(ver);
+        int nRet = idCardDriver.getVersionZ(ver);
         if (nRet== ConStant.ERRCODE_SUCCESS) {
             ShowMessage("获取读卡器固件版本成功，版本号"+ver, false);
         }else {
@@ -362,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
     void UsbGetBoardSN(){
 
         StringBuffer sn=new StringBuffer();
-        int nRet = idCardDriver.getBoardSN(sn);
+        int nRet = idCardDriver.getBoardSNZ(sn);
         if (nRet== ConStant.ERRCODE_SUCCESS) {
             ShowMessage("获取获取读卡器序列号成功，SN:"+sn, false);
         }else {
@@ -373,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
     void UsbGetChipSN(){
 
         byte[] snbuf=new byte[ConStant.DATA_BUFFER_SIZE];
-        int nRet = idCardDriver.getChipSN(snbuf);
+        int nRet = idCardDriver.getChipSNZ(snbuf);
         if (nRet== ConStant.ERRCODE_SUCCESS) {
             ShowMessage("获取获取芯片序列号成功，SchipSN:"+ zzStringTrans.byteToStr(snbuf), false);
         }else {
@@ -383,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
 
     void UsbGetSAMID(){
         byte[] samid=new byte[256];
-        int nRet=idCardDriver.getSAMID(samid);
+        int nRet=idCardDriver.getSAMIDZ(samid);
         String strSAMID=idCardDriver.SAMIDToNum(samid);
         if (nRet== android.serialport.api.ConStant.ERRCODE_SUCCESS) {
             ShowMessage("获取SAMID成功，SAMID:"+strSAMID, false);
@@ -406,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
                 IDCardRecord idCardRecord=new IDCardRecord();
                 String type = null;
                 try {
-                    int re = idCardDriver.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+                    int re = idCardDriver.readIDCardMsgZ(baseinf, basesize,photo,photosize,fpimg,fpsize);
                     if (re == 1 || re == 0) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -477,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
                 cmd[0]=0x12;
                 cmd[1]= (byte) 0xf3;
             }
-            byte[] bytes = idCardDriver.samCommand(cmd);
+            byte[] bytes = idCardDriver.samCommandZ(cmd);
             Log.e(TAG, "透传指令:" + android.serialport.api.zzStringTrans.hex2str(cmd));
             ShowMessage("SAM透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
             ShowMessage("SAM透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
@@ -498,7 +501,7 @@ public class MainActivity extends AppCompatActivity {
                 cmd[0]=0x12;
                 cmd[1]= (byte) 0xf3;
             }
-            byte[] bytes = idCardDriver.samCardCommand(cmd);
+            byte[] bytes = idCardDriver.samCardCommandZ(cmd);
 
             ShowMessage("SAM+身份证透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
             ShowMessage("SAM+身份证透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
@@ -534,7 +537,7 @@ public class MainActivity extends AppCompatActivity {
 
     void UsbFirmwareUpdate(){
 
-        int nRet = idCardDriver.firmwareUpdate();
+        int nRet = idCardDriver.firmwareUpdateZ();
         if (nRet== ERRCODE_SUCCESS){
             ShowMessage("切换BOOT成功", false);
         }else {
@@ -554,8 +557,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    byte[] cmd= android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_APPLY_AUTHORIZATION);
-                    byte[] bytes = idCardDriver.samCommand(cmd);
+                    byte[] cmd= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                    byte[] bytes = idCardDriver.samCommandZ(cmd);
                     String author=AnalysisTran(bytes);
                     Log.e(TAG, "author==" +author );
                     RequestOnlineAuth.Data data = new RequestOnlineAuth.Data();
@@ -568,9 +571,9 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "ex==" + execute.body().toString());
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
-                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_AUTHORIZATION);
+                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                         Log.e(TAG, "authresp_base:" + android.serialport.api.zzStringTrans.hex2str(authresp_base));
-                        byte[] realBytes = idCardDriver.samCommand(aut,authresp_base);
+                        byte[] realBytes = idCardDriver.samCommandZ(aut,authresp_base);
                         ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
                         //                        ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
                     }
@@ -586,14 +589,14 @@ public class MainActivity extends AppCompatActivity {
      * 获取签名证书
      * */
     public String  getSign(){
-        byte[] check= android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_CHECK);
-        byte[] check_bytes = idCardDriver.samCommand(check);
+        byte[] check= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_CHECK);
+        byte[] check_bytes = idCardDriver.samCommandZ(check);
         if (check_bytes==null){
             return "";
         }
         if (check_bytes[10]==0x01){
-            byte[] sign= android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_SIGN);
-            byte[] sign_byte=idCardDriver.samCommand(sign);
+            byte[] sign= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
+            byte[] sign_byte=idCardDriver.samCommandZ(sign);
             Log.e(TAG, "sign_byte:" + android.serialport.api.zzStringTrans.hex2str(sign_byte));
             return  AnalysisTran(sign_byte);
         }else{
@@ -706,10 +709,10 @@ public class MainActivity extends AppCompatActivity {
      * 联网读卡
      * */
     public void ReadCard(){
-        idCardDriver.samCommand(android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_CHECK));//0XA10C
-        idCardDriver.samCommand(android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_FindCARD_CONTROL));//0X2001
-        idCardDriver.samCommand(android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_SELECTCARD_CONTROL));//0X2002
-        byte[] bytes = idCardDriver.samCommand(android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER),IdCardDriver.BSENDBUF);//0X3020
+        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));//0XA10C
+        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_FindCARD_CONTROL));//0X2001
+        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_SELECTCARD_CONTROL));//0X2002
+        byte[] bytes = idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_INTERNT_READCARD_FACEFINGER), ZzReader.BSENDBUF);//0X3020
     }
 
     public String AnalysisTran(byte[] tran){
@@ -739,23 +742,27 @@ public class MainActivity extends AppCompatActivity {
 
 
     void SerialConnect(){
-        int i = mr990Driver.zzIDFPControl(Mr990SwitchStateProxy.OPEN);//mr990上电
-        Log.e(TAG, "i====" +i );
-        openFlag=true;
         mSerialPortHelper=new SerialPortHelper();
-        ShowMessage("读卡器连接成功", false);
+        int i1 = mSerialPortHelper.connectReaderZ("/dev/ttyHSL2");
+        if (i1==0){
+            openFlag=true;
+            ShowMessage("读卡器连接成功", false);
+        }else {
+            openFlag=false;
+            ShowMessage("读卡器连接失败", false);
+        }
     }
 
     void SerialDisconnect(){
         if(openFlag){
             openFlag=false;
-            mSerialPortHelper.close();
+            mSerialPortHelper.disconnectZ();
             ShowMessage("读卡器断开连接", false);
         }
     }
 
     void SerialGetAtr(){
-        byte[] nRet = mSerialPortHelper.getAtr();
+        byte[] nRet = mSerialPortHelper.getAtrZ();
         if (nRet!=null){
             Log.e(TAG, "nRet:" + android.serialport.api.zzStringTrans.hex2str(nRet));
             ShowMessage("获取卡片成功，"+ android.serialport.api.zzStringTrans.hex2str(nRet), false);
@@ -766,7 +773,7 @@ public class MainActivity extends AppCompatActivity {
 
     void SerialGetVersion(){
         StringBuffer ver=new StringBuffer();
-        int nRet= mSerialPortHelper.getVersion(ver);
+        int nRet= mSerialPortHelper.getVersionZ(ver);
         Log.e(TAG, "ver:" +ver.toString());
         if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取读卡器固件版本成功，版本号"+ver, false);
@@ -778,7 +785,7 @@ public class MainActivity extends AppCompatActivity {
 
     void SerialGetBoardSN(){
         StringBuffer sn=new StringBuffer();
-        int nRet = mSerialPortHelper.getBoardSN(sn);
+        int nRet = mSerialPortHelper.getBoardSNZ(sn);
         Log.e(TAG, "ver:" +sn.toString());
         if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取获取读卡器序列号成功，SN:"+sn, false);
@@ -790,7 +797,7 @@ public class MainActivity extends AppCompatActivity {
 
     void SerialGetChipSN(){
         byte[] snbuf=new byte[64];
-        int nRet=mSerialPortHelper.getChipSN(snbuf);
+        int nRet=mSerialPortHelper.getChipSNZ(snbuf);
         Log.e(TAG, "ver:" + android.serialport.api.zzStringTrans.hex2str(snbuf));
         if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取获取芯片序列号成功，SchipSN:"+ android.serialport.api.zzStringTrans.byteToStr(snbuf), false);
@@ -802,7 +809,7 @@ public class MainActivity extends AppCompatActivity {
 
     void SerialGetSAMID(){
         byte[] samid=new byte[64];
-        int nRet=mSerialPortHelper.getSAMID(samid);
+        int nRet=mSerialPortHelper.getSAMIDZ(samid);
         if (nRet== ERRCODE_SUCCESS) {
             String strSAMID=mSerialPortHelper.SAMIDToNum(samid);
             ShowMessage("获取SAMID成功，SAMID:"+strSAMID, false);
@@ -822,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
         IDCardRecord idCardRecord=new IDCardRecord();
         String type = null;
         try {
-            int re = mSerialPortHelper.readIDCardMsg(baseinf, basesize,photo,photosize,fpimg,fpsize);
+            int re = mSerialPortHelper.readIDCardMsgZ(baseinf, basesize,photo,photosize,fpimg,fpsize);
             if ( re == 0) {
                 runOnUiThread(new Runnable() {
                     @Override
@@ -893,7 +900,7 @@ public class MainActivity extends AppCompatActivity {
                         cmd[0]=0x12;
                         cmd[1]= (byte) 0xf3;
                     }
-                    byte[] bytes = mSerialPortHelper.samCommand(cmd);
+                    byte[] bytes = mSerialPortHelper.samCommandZ(cmd);
 
                     ShowMessage("SAM透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
                     ShowMessage("SAM透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
@@ -915,7 +922,7 @@ public class MainActivity extends AppCompatActivity {
                 cmd[0]=0x12;
                 cmd[1]= (byte) 0xf3;
             }
-            byte[] bytes = mSerialPortHelper.samCardCommand(cmd);
+            byte[] bytes = mSerialPortHelper.samCardCommandZ(cmd);
 
             ShowMessage("SAM+身份证透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
             ShowMessage("SAM+身份证透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
@@ -935,7 +942,7 @@ public class MainActivity extends AppCompatActivity {
             }
             byte[] apducmd=trim.getBytes();
             //            byte[] apducmd=new byte[]{0x00, (byte) 0x84,0x00,0x00,0x08};
-            byte[] transceiveBuffer = mSerialPortHelper.transceive(apducmd);
+            byte[] transceiveBuffer = mSerialPortHelper.transceiveZ(apducmd);
             if (transceiveBuffer==null){
                 ShowMessage("APDU指令传输失败，错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
                 return;
@@ -949,7 +956,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void SerialFirmwareUpdate(){
-        int nRet = mSerialPortHelper.firmwareUpdate();
+        int nRet = mSerialPortHelper.firmwareUpdateZ();
         if (nRet== ERRCODE_SUCCESS){
             ShowMessage("切换BOOT成功", false);
         }else {
@@ -968,10 +975,10 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mSerialPortHelper.samCommand(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
-                mSerialPortHelper.samCommand(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
-                mSerialPortHelper.samCommand(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
-                byte[] bytes = mSerialPortHelper.samCommand(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
+                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
+                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
+                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
+                byte[] bytes = mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
 
             }
         }).start();
@@ -987,7 +994,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     byte[] cmd= android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_APPLY_AUTHORIZATION);
-                    byte[] bytes = mSerialPortHelper.samCommand(cmd);
+                    byte[] bytes = mSerialPortHelper.samCommandZ(cmd);
                     String author=AnalysisTranSerial(bytes);
                     RequestOnlineAuth.Data data = new RequestOnlineAuth.Data();
                     data.setAuthreq(author.trim().replace("\n",""));
@@ -998,8 +1005,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "ex==" + execute.body().toString());
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
-                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(IdCardDriver.CMD_AUTHORIZATION);
-                        byte[] realBytes = mSerialPortHelper.samCommand(aut,authresp_base);
+                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                        byte[] realBytes = mSerialPortHelper.samCommandZ(aut,authresp_base);
                         ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
                         //                        ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
                     }
@@ -1018,9 +1025,9 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mSerialPortHelper.samCommand(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_CHECK));
-                byte[] sign= org.zz.idcard_hid_driver.MXDataCode.shortToByteArray(mSerialPortHelper.W_SIGN);
-                byte[] bytes = mSerialPortHelper.samCommand(sign);
+                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_CHECK));
+                byte[] sign= com.zzreader.MXDataCode.shortToByteArray(mSerialPortHelper.W_SIGN);
+                byte[] bytes = mSerialPortHelper.samCommandZ(sign);
                 Log.e(TAG, "sign_byte:" + android.serialport.api.zzStringTrans.hex2str(bytes));
             }
         }).start();

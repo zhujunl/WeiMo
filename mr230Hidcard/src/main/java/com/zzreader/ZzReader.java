@@ -1,4 +1,4 @@
-package org.zz.idcard_hid_driver;
+package com.zzreader;
 
 import android.content.Context;
 import android.os.Handler;
@@ -10,7 +10,7 @@ import com.guoguang.jni.JniCall;
 
 import java.math.BigInteger;
 
-public class IdCardDriver
+public class ZzReader
 {
     public static byte CMD_IDCARD_COMMAND;
     public static short CMD_ANTCTL_CONTROL;
@@ -50,34 +50,34 @@ public class IdCardDriver
     private final String TAG="IdCardDriver";
 
     static {
-        IdCardDriver.CMD_IDCARD_COMMAND = (byte) 0xB1;
-        IdCardDriver.CMD_ANTCTL_CONTROL = -1519;
-        IdCardDriver.CMD_READIDVER_CONTROL = (short) 0xFAF0;
-        IdCardDriver.CMD_READIDMSG_CONTROL = (short) 0xFA92;
-        IdCardDriver.CMD_GETSAMID_CONTROL = 0x12FF;
-        IdCardDriver.CMD_FindCARD_CONTROL = 0x2001;
-        IdCardDriver.CMD_SELECTCARD_CONTROL = 0x2002;
-        IdCardDriver.CMD_READMSG_CONTROL = 0x3001;
-        IdCardDriver.CMD_READFULLMSG_CONTROL = 0x301B;
-        IdCardDriver.CMD_BOOT=0x11FF;
-        IdCardDriver.CMD_ATR= (short) 0xFA90;
-        IdCardDriver.CMD_SN= (short) 0xFAF2;
-        IdCardDriver.CMD_ChipSN= (short) 0xFAF3;
-        IdCardDriver.CMD_APDU= (short) 0xFA91;
-        IdCardDriver.CMD_APPLY_AUTHORIZATION= (short) 0xA10D;
-        IdCardDriver.CMD_AUTHORIZATION= (short) 0xA10E;
-        IdCardDriver.CMD_CHECK= (short) 0xA10C;
-        IdCardDriver.CMD_SIGN=0x12FE;
-        IdCardDriver.CMD_INTERNT_READCARD=0x3020;
-        IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER=0x3021;
-        IdCardDriver.CMD_LOWPOWER=0x6201;
+        ZzReader.CMD_IDCARD_COMMAND = (byte) 0xB1;
+        ZzReader.CMD_ANTCTL_CONTROL = -1519;
+        ZzReader.CMD_READIDVER_CONTROL = (short) 0xFAF0;
+        ZzReader.CMD_READIDMSG_CONTROL = (short) 0xFA92;
+        ZzReader.CMD_GETSAMID_CONTROL = 0x12FF;
+        ZzReader.CMD_FindCARD_CONTROL = 0x2001;
+        ZzReader.CMD_SELECTCARD_CONTROL = 0x2002;
+        ZzReader.CMD_READMSG_CONTROL = 0x3001;
+        ZzReader.CMD_READFULLMSG_CONTROL = 0x301B;
+        ZzReader.CMD_BOOT=0x11FF;
+        ZzReader.CMD_ATR= (short) 0xFA90;
+        ZzReader.CMD_SN= (short) 0xFAF2;
+        ZzReader.CMD_ChipSN= (short) 0xFAF3;
+        ZzReader.CMD_APDU= (short) 0xFA91;
+        ZzReader.CMD_APPLY_AUTHORIZATION= (short) 0xA10D;
+        ZzReader.CMD_AUTHORIZATION= (short) 0xA10E;
+        ZzReader.CMD_CHECK= (short) 0xA10C;
+        ZzReader.CMD_SIGN=0x12FE;
+        ZzReader.CMD_INTERNT_READCARD=0x3020;
+        ZzReader.CMD_INTERNT_READCARD_FACEFINGER=0x3021;
+        ZzReader.CMD_LOWPOWER=0x6201;
 
-        IdCardDriver.IMAGE_X = 256;
-        IdCardDriver.IMAGE_Y = 360;
-        IdCardDriver.IMAGE_SIZE = IdCardDriver.IMAGE_X * IdCardDriver.IMAGE_Y;
-        IdCardDriver.CMD_GET_IMAGE = 10;
-        IdCardDriver.CMD_READ_VERSION = 13;
-        IdCardDriver.CMD_GET_HALF_IMG = 20;
+        ZzReader.IMAGE_X = 256;
+        ZzReader.IMAGE_Y = 360;
+        ZzReader.IMAGE_SIZE = ZzReader.IMAGE_X * ZzReader.IMAGE_Y;
+        ZzReader.CMD_GET_IMAGE = 10;
+        ZzReader.CMD_READ_VERSION = 13;
+        ZzReader.CMD_GET_HALF_IMG = 20;
     }
 
     public void mxSetTraceLevel(final int iTraceLevel) {
@@ -101,12 +101,12 @@ public class IdCardDriver
         }
     }
 
-    public IdCardDriver(final Context context) {
+    public ZzReader(final Context context) {
         this.m_fHandler = null;
         this.m_usbBase = new UsbBase(context);
     }
 
-    public IdCardDriver(final Context context, final Handler bioHandler) {
+    public ZzReader(final Context context, final Handler bioHandler) {
         this.m_fHandler = null;
         this.m_fHandler = bioHandler;
         this.m_usbBase = new UsbBase(context, bioHandler);
@@ -124,7 +124,7 @@ public class IdCardDriver
     public int mxGetDevVersion(final byte[] bVersion) {
         int nRet = ConStant.ERRCODE_SUCCESS;
         final int[] wRecvLength = { 56 };
-        nRet = this.ExeCommand(IdCardDriver.CMD_READ_VERSION, null, 0, 100, bVersion, wRecvLength, ConStant.CMD_TIMEOUT);
+        nRet = this.ExeCommand(ZzReader.CMD_READ_VERSION, null, 0, 100, bVersion, wRecvLength, ConStant.CMD_TIMEOUT);
         return nRet;
     }
 
@@ -132,7 +132,7 @@ public class IdCardDriver
      * 连接读卡器
      * @return 0成功其他失败
      * */
-    public synchronized int connect(){
+    public synchronized int connectReaderZ(String reader){
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.m_usbBase.openDev(ConStant.VID, ConStant.PID);
         if (iRet != 0) {
@@ -149,7 +149,7 @@ public class IdCardDriver
      * 断开读卡器连接
      * @return 0成功其他失败
      * */
-    public synchronized int disconnect(){
+    public synchronized int disconnectZ (){
         int iRet = ConStant.ERRCODE_SUCCESS;
         this.m_usbBase.closeDev();
         return iRet;
@@ -160,7 +160,7 @@ public class IdCardDriver
      * @param ver 输出固件版本
      * @return 0成功，其他失败
      * */
-    public synchronized int getVersion(StringBuffer ver) {
+    public synchronized int getVersionZ(StringBuffer ver) {
         byte[] bVersion=new byte[ConStant.DATA_BUFFER_SIZE];
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.GetVersion(bVersion);
@@ -177,7 +177,7 @@ public class IdCardDriver
      * @param sn  输出读卡器序列号
      * @return 0成功，其他失败
      * */
-    public synchronized int getBoardSN(StringBuffer sn){
+    public synchronized int getBoardSNZ(StringBuffer sn){
         byte[] bSn=new byte[ConStant.DATA_BUFFER_SIZE];
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.GetBoardSN(bSn);
@@ -194,7 +194,7 @@ public class IdCardDriver
      * @param snbuf 输出芯片序列号
      * @return 0成功，其他失败
      * */
-    public synchronized int getChipSN(byte[] snbuf){
+    public synchronized int getChipSNZ(byte[] snbuf){
 
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.GetChipSN(snbuf);
@@ -208,7 +208,7 @@ public class IdCardDriver
      *  获取卡片ATR（找卡）
      * @return Atr 返回应答数据
      * */
-    public synchronized byte[] getAtr(){
+    public synchronized byte[] getAtrZ(){
         byte[] Atr = new byte[64];
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.GetAtr(Atr);
@@ -222,7 +222,7 @@ public class IdCardDriver
      * 切回boot态
      * @return 0成功，其他失败
      * */
-    public synchronized int firmwareUpdate(){
+    public synchronized int firmwareUpdateZ(){
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.Boot();
         if (iRet != 144) {
@@ -284,7 +284,7 @@ public class IdCardDriver
      * @param samid 输出SAMID
      * @return 0成功，其他失败
      * */
-    public synchronized int getSAMID(byte[] samid) {
+    public synchronized int getSAMIDZ(byte[] samid) {
         final int iRet = this.GetSAMID(samid);
         if (iRet != 144) {
             return ConStant.ERRORCODE_SAMID;
@@ -305,7 +305,7 @@ public class IdCardDriver
         final int[] uiCHMsgLen = { 0 };
         final int[] uiPHMsgLen = { 0 };
         final byte[] bmp = new byte[38862];
-        this.SendMsg("GetSAMID");
+        this.SendMsg("GetSAMIDZ");
         iRet = this.GetSAMID(pucManaInfo);
         if (iRet != 144) {
             this.AntControl(0);
@@ -349,7 +349,7 @@ public class IdCardDriver
      * @param fpsize      [OUT]指纹数据长度
      * @return 0成功，其他失败
      * */
-    public synchronized int readIDCardMsg(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
+    public synchronized int readIDCardMsgZ(byte[] baseinf, int[] basesize, byte[] photo, int[] photosize, byte[] fpimg, int[] fpsize){
         this.SendMsg("========================");
         this.SendMsg("mxReadCardFullInfo");
         if ((baseinf.length+photo.length+fpimg.length) < 2304) {
@@ -359,12 +359,12 @@ public class IdCardDriver
         final byte[] pucManaInfo = new byte[256];
         this.AntControl(0);
         this.SendMsg("GetSAMID");
-        iRet = this.GetSAMID(pucManaInfo);
-        if (iRet != 144) {
-            this.AntControl(0);
-            Log.d(TAG, "GetSAMID:"+iRet);
-            return ConStant.ERRCODE_READCARD;
-        }
+//        iRet = this.GetSAMID(pucManaInfo);
+//        if (iRet != 144) {
+//            this.AntControl(0);
+//            Log.d(TAG, "GetSAMID:"+iRet);
+//            return ConStant.ERRCODE_READCARD;
+//        }
         this.SendMsg("StartFindIDCard");
         iRet = this.StartFindIDCard(pucManaInfo);
         if (iRet != 159) {
@@ -423,7 +423,7 @@ public class IdCardDriver
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public synchronized byte[] samCommand(byte[] cmd){
+    public synchronized byte[] samCommandZ(byte[] cmd){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[ConStant.CMD_BUFSIZE];
         final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
@@ -446,7 +446,7 @@ public class IdCardDriver
         return out;
     }
 
-    public byte[] samCommand(byte[] cmd,byte[] bSendBuf){
+    public byte[] samCommandZ(byte[] cmd,byte[] bSendBuf){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[ConStant.CMD_BUFSIZE];
         final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
@@ -473,7 +473,7 @@ public class IdCardDriver
      * @param cmd   [IN]指令数据
      * @return 响应数据
      * */
-    public synchronized byte[] samCardCommand(byte[] cmd){
+    public synchronized byte[] samCardCommandZ(byte[] cmd){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[512];
         final byte[] oPackDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
@@ -591,7 +591,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_READIDVER_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_READIDVER_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -623,7 +623,7 @@ public class IdCardDriver
         final byte[] oRecvDataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_APDU, apducmd, apducmd.length, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_APDU, apducmd, apducmd.length, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -655,7 +655,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_SN, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_SN, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -688,7 +688,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_ChipSN, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_ChipSN, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -721,7 +721,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_ATR, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_ATR, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -754,7 +754,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_BOOT, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_BOOT, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -784,7 +784,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_READIDMSG_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_READIDMSG_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -817,7 +817,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_GETSAMID_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_GETSAMID_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -850,7 +850,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_FindCARD_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_FindCARD_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -884,7 +884,7 @@ public class IdCardDriver
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
         this.SendMsg("SendIDCardPack");
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_SELECTCARD_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_SELECTCARD_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             this.SendMsg("SendIDCardPack lRV=" + lRV);
             return lRV;
@@ -923,7 +923,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_READMSG_CONTROL, null, 0, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_READMSG_CONTROL, null, 0, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -961,7 +961,7 @@ public class IdCardDriver
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_INTERNT_READCARD_FACEFINGER, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_INTERNT_READCARD_FACEFINGER, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -1009,7 +1009,7 @@ public class IdCardDriver
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
         final byte[] bSendBuf = { (byte)dAntState };
-        lRV = this.SendIDCardPack(IdCardDriver.CMD_ANTCTL_CONTROL, bSendBuf, 1, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_ANTCTL_CONTROL, bSendBuf, 1, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return lRV;
         }
@@ -1195,7 +1195,7 @@ public class IdCardDriver
 
     int IDCardAPDU(final byte[] lpSendData, final int wSendLength, final int iSendTime, final byte[] lpRecvData, final int[] io_wRecvLength, final int iRecvTime) {
         int lRV = ConStant.ERRCODE_SUCCESS;
-        lRV = this.ExeCommand(IdCardDriver.CMD_IDCARD_COMMAND, lpSendData, wSendLength, iSendTime, lpRecvData, io_wRecvLength, iRecvTime);
+        lRV = this.ExeCommand(ZzReader.CMD_IDCARD_COMMAND, lpSendData, wSendLength, iSendTime, lpRecvData, io_wRecvLength, iRecvTime);
         return lRV;
     }
 
@@ -1205,7 +1205,11 @@ public class IdCardDriver
         int iRet = ConStant.ERRCODE_SUCCESS;
         iRet = this.m_usbBase.openDev(ConStant.VID, ConStant.PID);
         if (iRet != 0) {
-            return iRet;
+            SystemClock.sleep(500);
+            iRet = this.m_usbBase.openDev(ConStant.VID, ConStant.PID);
+            if (iRet != 0){
+                return iRet;
+            }
         }
 //        if (this.m_usbBase.getM_connection()==null){
 //            return ConStant.ERRCODE_NODEVICE;
