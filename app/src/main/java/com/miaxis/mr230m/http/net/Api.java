@@ -4,6 +4,8 @@ import com.miaxis.mr230m.http.bean.RequestActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
 import com.miaxis.mr230m.http.bean.RequestReportIDInfo;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
+import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
+import com.miaxis.mr230m.http.bean.ResponseReportIDInfo;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -21,8 +23,8 @@ public interface Api {
     Call<ResponseActiveInfo> RequestActiveInfo(@Body RequestActiveInfo entity);
 
     @POST("/decryptservice/onlineauth")
-    Call<ResponseActiveInfo> RequestOnlineAuth(@Body RequestOnlineAuth entity);
+    Call<ResponseOnlineAuth> RequestOnlineAuth(@Body RequestOnlineAuth entity);
 
     @POST("/decryptservice/idinfo")
-    Call<ResponseActiveInfo> RequestIDInfo(@Body RequestReportIDInfo entity);
+    Call<ResponseReportIDInfo> RequestIDInfo(@Body RequestReportIDInfo entity);
 }

@@ -112,6 +112,7 @@
 
                 <EditText
                     android:id="@+id/ip_edit"
+                    android:text="http://192.168.6.78:8080"
                     android:layout_width="0dp"
                     android:layout_weight="2"
                     android:layout_height="wrap_content"/>
@@ -231,7 +232,18 @@
 
 
             </LinearLayout>
-
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <Button
+                    android:id="@+id/btn_activeInfo"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button"
+                    android:text="激活"
+                    android:onClick="OnClickActive"/>
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">

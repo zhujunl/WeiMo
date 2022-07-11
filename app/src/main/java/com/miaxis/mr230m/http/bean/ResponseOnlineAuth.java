@@ -13,7 +13,7 @@ public class ResponseOnlineAuth {
     private String desc;
     private Data data;
 
-    private class Data{
+    public class Data{
         private String authresp;
 
         public Data(String authresp) {

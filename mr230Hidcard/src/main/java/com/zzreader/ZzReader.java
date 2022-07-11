@@ -33,6 +33,8 @@ public class ZzReader
     public static short CMD_INTERNT_READCARD;
     public static short CMD_INTERNT_READCARD_FACEFINGER;
     public static short CMD_LOWPOWER;
+    public static short CMD_ACTIVEINFO;
+    public static short CMD_ACT_RELIVE;
 
     private static int IMAGE_X;
     private static int IMAGE_Y;
@@ -71,6 +73,8 @@ public class ZzReader
         ZzReader.CMD_INTERNT_READCARD=0x3020;
         ZzReader.CMD_INTERNT_READCARD_FACEFINGER=0x3021;
         ZzReader.CMD_LOWPOWER=0x6201;
+        ZzReader.CMD_ACTIVEINFO= (short) 0xA10A;
+        ZzReader.CMD_ACT_RELIVE= (short) 0xA10B;
 
         ZzReader.IMAGE_X = 256;
         ZzReader.IMAGE_Y = 360;
@@ -276,7 +280,7 @@ public class ZzReader
         final BigInteger sTemp3 = MXDataCode.byteArrayToBigInteger(temp3);
         final BigInteger sTemp4 = MXDataCode.byteArrayToBigInteger(temp4);
         final BigInteger sTemp5 = MXDataCode.byteArrayToBigInteger(temp5);
-        return String.format("%02d%02d%08d%010d%010d", sTemp1, sTemp2, sTemp3, sTemp4, sTemp5);
+        return String.format("%02d%02d%08d%010d", sTemp1, sTemp2, sTemp3, sTemp4);
     }
 
     /**
@@ -1278,7 +1282,7 @@ public class ZzReader
         int iRet = -1;
         int offsize = 0;
         short iCheckSum = 0;
-        final byte[] DataBuffer = new byte[ConStant.DATA_BUFFER_SIZE_MIN];
+        final byte[] DataBuffer = new byte[iDataLen];
         int a=bSendBuf[5];
         int b=bSendBuf[6];
         if (a<0){
@@ -1293,32 +1297,87 @@ public class ZzReader
         if (pack%ConStant.DATA_BUFFER_SIZE!=0){
             pack++;
         }
-        if (iDataLen > 1&&iDataLen<56) {
+        if (iDataLen > 1) {
             for (int i = 0; i < iDataLen; ++i) {
                 DataBuffer[offsize++] = bSendBuf[i];
             }
-            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
-            if (iRet < 0) {
-                return ConStant.ERRCODE_TRANS;
-            }
-        }else if (iDataLen>56){
-            for (int i = 0; i < 56; ++i) {
-                DataBuffer[offsize++] = bSendBuf[i];
-            }
-            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
-            if (iRet < 0) {
-                return ConStant.ERRCODE_TRANS;
-            }
-            for (int j=1;j<pack;j++){
-                System.arraycopy(bSendBuf,  56 +(64*(j-1)) , DataBuffer, 0, DataBuffer.length);
-                iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
-                if (iRet < 0) {
-                    return ConStant.ERRCODE_TRANS;
-                }
-            }
         }
+        iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+        if (iRet < 0) {
+            return iRet;
+        }
+        //        if (iDataLen > 1&&iDataLen<56) {
+        //            for (int i = 0; i < iDataLen; ++i) {
+        //                DataBuffer[offsize++] = bSendBuf[i];
+        //            }
+        //            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+        //            if (iRet < 0) {
+        //                return ConStant.ERRCODE_TRANS;
+        //            }
+        //        }else if (iDataLen>56){
+        //            for (int i = 0; i < 56; ++i) {
+        //                DataBuffer[offsize++] = bSendBuf[i];
+        //            }
+        //            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+        //            if (iRet < 0) {
+        //                return ConStant.ERRCODE_TRANS;
+        //            }
+        //            for (int j=1;j<pack;j++){
+        //                System.arraycopy(bSendBuf,  56 +(64*(j-1)) , DataBuffer, 0, DataBuffer.length);
+        //                iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+        //                if (iRet < 0) {
+        //                    return ConStant.ERRCODE_TRANS;
+        //                }
+        //            }
+        //        }
         return 0;
     }
+
+//    private int sendPacket(final byte bCmd, final byte[] bSendBuf, final int iDataLen) {
+//        int iRet = -1;
+//        int offsize = 0;
+//        short iCheckSum = 0;
+//        final byte[] DataBuffer = new byte[64];
+//        int a=bSendBuf[5];
+//        int b=bSendBuf[6];
+//        if (a<0){
+//            a+=256;
+//        }
+//        if (b<0){
+//            b+=256;
+//        }
+//        int len=a*256+b+7;
+//        int pack=0;
+//        pack=len/ConStant.DATA_BUFFER_SIZE;
+//        if (pack%ConStant.DATA_BUFFER_SIZE!=0){
+//            pack++;
+//        }
+//        if (iDataLen > 1&&iDataLen<64) {
+//            for (int i = 0; i < iDataLen; ++i) {
+//                DataBuffer[offsize++] = bSendBuf[i];
+//            }
+//            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+//            if (iRet < 0) {
+//                return ConStant.ERRCODE_TRANS;
+//            }
+//        }else if (iDataLen>64){
+//            for (int i = 0; i < 64; ++i) {
+//                DataBuffer[offsize++] = bSendBuf[i];
+//            }
+//            iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+//            if (iRet < 0) {
+//                return ConStant.ERRCODE_TRANS;
+//            }
+//            for (int j=1;j<pack;j++){
+//                System.arraycopy(bSendBuf,  64 +(64*(j-1)) , DataBuffer, 0, DataBuffer.length);
+//                iRet = this.m_usbBase.sendData(DataBuffer, DataBuffer.length, ConStant.CMD_TIMEOUT);
+//                if (iRet < 0) {
+//                    return ConStant.ERRCODE_TRANS;
+//                }
+//            }
+//        }
+//        return 0;
+//    }
 
     private int recvPacket(final byte[] bResult, final byte[] bRecvBuf, final int[] iRecvLen, final int iTimeOut) {
         int iRet = -1;

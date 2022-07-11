@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.serialport.MXDataCode;
 import android.serialport.api.SerialPortHelper;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import com.miaxis.mr230m.http.bean.RequestActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
+import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
 import com.miaxis.mr230m.http.net.MyRetrofit;
 import com.zzreader.ConStant;
 import com.zzreader.ZzReader;
@@ -309,6 +311,27 @@ public class MainActivity extends AppCompatActivity {
             SerialLowPower();
         }
     }
+    
+    public void OnClickActive(View view){
+        if (!openFlag){
+            ShowMessage("读卡器未连接",false);
+            return;
+        }
+        mProgressDialog.show();
+        ActiveInfo();
+    }
+    
+    public void OnClickActRel(View view){
+        if (!openFlag){
+            ShowMessage("读卡器未连接",false);
+            return;
+        }
+        if (isUsb){
+            ActRel();
+        }else {
+
+        }
+    }
 
 
     /**
@@ -481,9 +504,9 @@ public class MainActivity extends AppCompatActivity {
                 cmd[1]= (byte) 0xf3;
             }
             byte[] bytes = idCardDriver.samCommandZ(cmd);
-            Log.e(TAG, "透传指令:" + android.serialport.api.zzStringTrans.hex2str(cmd));
-            ShowMessage("SAM透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
+            Log.e(TAG, "透传指令:" + zzStringTrans.hex2str(cmd));
+            ShowMessage("SAM透传指令："+ zzStringTrans.hex2str(cmd), false);
+            ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
@@ -503,8 +526,8 @@ public class MainActivity extends AppCompatActivity {
             }
             byte[] bytes = idCardDriver.samCardCommandZ(cmd);
 
-            ShowMessage("SAM+身份证透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM+身份证透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
+            ShowMessage("SAM+身份证透传指令："+ zzStringTrans.hex2str(cmd), false);
+            ShowMessage("SAM+身份证透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
@@ -527,8 +550,8 @@ public class MainActivity extends AppCompatActivity {
                 ShowMessage("APDU指令传输失败，错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
                 return;
             }
-            ShowMessage("APDU指令数据："+ android.serialport.api.zzStringTrans.hex2str(apducmd), false);
-            ShowMessage("APDU返回："+ android.serialport.api.zzStringTrans.hex2str(transceiveBuffer), true);
+            ShowMessage("APDU指令数据："+ zzStringTrans.hex2str(apducmd), false);
+            ShowMessage("APDU返回："+ zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
@@ -557,7 +580,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    byte[] cmd= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                    byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
                     byte[] bytes = idCardDriver.samCommandZ(cmd);
                     String author=AnalysisTran(bytes);
                     Log.e(TAG, "author==" +author );
@@ -565,14 +588,14 @@ public class MainActivity extends AppCompatActivity {
                     data.setAuthreq(author.trim().replace("\n",""));
                     RequestOnlineAuth requestOnlineAuth=new RequestOnlineAuth("" ,"zjzz", data);
                     Log.e(TAG, "requestOnlineAuth:" +requestOnlineAuth.toString() );
-                    Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
+                    Response<ResponseOnlineAuth> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
                             .RequestOnlineAuth(requestOnlineAuth).execute();
                     if (execute.code()==200&&execute.body().getRet().equals("1")){
                         Log.e(TAG, "ex==" + execute.body().toString());
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
-                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
-                        Log.e(TAG, "authresp_base:" + android.serialport.api.zzStringTrans.hex2str(authresp_base));
+                        byte[] aut= MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                        Log.e(TAG, "authresp_base:" + zzStringTrans.hex2str(authresp_base));
                         byte[] realBytes = idCardDriver.samCommandZ(aut,authresp_base);
                         ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
                         //                        ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
@@ -589,15 +612,15 @@ public class MainActivity extends AppCompatActivity {
      * 获取签名证书
      * */
     public String  getSign(){
-        byte[] check= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_CHECK);
+        byte[] check= MXDataCode.shortToByteArray(ZzReader.CMD_CHECK);
         byte[] check_bytes = idCardDriver.samCommandZ(check);
         if (check_bytes==null){
             return "";
         }
         if (check_bytes[10]==0x01){
-            byte[] sign= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
+            byte[] sign= MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
             byte[] sign_byte=idCardDriver.samCommandZ(sign);
-            Log.e(TAG, "sign_byte:" + android.serialport.api.zzStringTrans.hex2str(sign_byte));
+            Log.e(TAG, "sign_byte:" + zzStringTrans.hex2str(sign_byte));
             return  AnalysisTran(sign_byte);
         }else{
 
@@ -620,17 +643,17 @@ public class MainActivity extends AppCompatActivity {
             byte[] pucP=new byte[1024];
             byte[] pucF=new byte[1024];
             System.arraycopy(baseinf, 11, pcSAMID, 0, pcSAMID.length);
-            Log.e(TAG, "pcSAMID:" + android.serialport.api.zzStringTrans.hex2str(pcSAMID));
+            Log.e(TAG, "pcSAMID:" + zzStringTrans.hex2str(pcSAMID));
             System.arraycopy(baseinf, 33, pucRin, 0, pucRin.length);
-            Log.e(TAG, "pucRin:" + android.serialport.api.zzStringTrans.hex2str(pucRin));
+            Log.e(TAG, "pucRin:" + zzStringTrans.hex2str(pucRin));
             System.arraycopy(baseinf, 49, pucT, 0, pucT.length);
-            Log.e(TAG, "pucT:" + android.serialport.api.zzStringTrans.hex2str(pucT));
+            Log.e(TAG, "pucT:" + zzStringTrans.hex2str(pucT));
             System.arraycopy(baseinf, 81, pucShortcode, 0, pucShortcode.length);
-            Log.e(TAG, "pucShortcode:" + android.serialport.api.zzStringTrans.hex2str(pucShortcode));
+            Log.e(TAG, "pucShortcode:" + zzStringTrans.hex2str(pucShortcode));
             System.arraycopy(baseinf, 97, pucChkDataLenH, 0, pucChkDataLenH.length);
-            Log.e(TAG, "pucChkDataLenH:" + android.serialport.api.zzStringTrans.hex2str(pucChkDataLenH));
+            Log.e(TAG, "pucChkDataLenH:" + zzStringTrans.hex2str(pucChkDataLenH));
             System.arraycopy(baseinf, 98, pucChkDatalenL, 0, pucChkDatalenL.length);
-            Log.e(TAG, "pucChkDatalenL:" + android.serialport.api.zzStringTrans.hex2str(pucChkDatalenL));
+            Log.e(TAG, "pucChkDatalenL:" + zzStringTrans.hex2str(pucChkDatalenL));
             int a = pucChkDataLenH[0];
             int b=pucChkDatalenL[0];
             if (a<0){
@@ -642,19 +665,19 @@ public class MainActivity extends AppCompatActivity {
             byte[] pucChkData=new byte[a*256+b];
             Log.e(TAG, "pucChkData.length:" +pucChkData.length );
             System.arraycopy(baseinf, 99, pucChkData, 0, pucChkData.length);
-            Log.e(TAG, "pucChkData:" + android.serialport.api.zzStringTrans.hex2str(pucChkData));
+            Log.e(TAG, "pucChkData:" + zzStringTrans.hex2str(pucChkData));
             System.arraycopy(baseinf, 99+32+pucChkData.length, pucSign, 0, pucSign.length);
-            Log.e(TAG, "pucSign:" + android.serialport.api.zzStringTrans.hex2str(pucSign));
+            Log.e(TAG, "pucSign:" + zzStringTrans.hex2str(pucSign));
             if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4)) {
                 System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4, pucP, 0, pucP.length);
-                Log.e(TAG, "pucP:" + android.serialport.api.zzStringTrans.hex2str(pucP));
+                Log.e(TAG, "pucP:" + zzStringTrans.hex2str(pucP));
                 ImageView img=findViewById(R.id.image_idcard);
                 Bitmap faceBit = IdCardParser.getBitmap(pucP);
                 img.setImageBitmap(faceBit);
             }
             if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4+1024)) {
                 System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4 + 1024, pucF, 0, pucF.length);
-                Log.e(TAG, "pucF:" + android.serialport.api.zzStringTrans.hex2str(pucF));
+                Log.e(TAG, "pucF:" + zzStringTrans.hex2str(pucF));
             }
 
 
@@ -691,37 +714,57 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 激活
      * */
-    public void ActiveInfo(){
+     void ActiveInfo(){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim()).RequestActiveInfo(new RequestActiveInfo("", "11")).execute();
-                    Log.e(TAG, "execute.toString():" + execute.toString());
+                    Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
+                            .RequestActiveInfo(new RequestActiveInfo("", "11")).execute();
+                    if (execute.body().getRet().equals("1")){
+                        String activeinfo=execute.body().getData().getActiveinfo();
+                        byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
+                        byte[] c=new byte[50];
+                        System.arraycopy(bytes,bytes.length-50,c,0,c.length);
+                        Log.e("a:::",zzStringTrans.hex2str(c));
+                        if (isUsb){
+                            byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                            mProgressDialog.cancel();
+                            ShowMessage(zzStringTrans.hex2str(bytes1), false);
+                        }else {
+                            mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(SerialPortHelper.W_ACTIVEINFO),bytes);
+                        }
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    ShowMessage(e.getMessage(), false);
                 }
             }
         }).start();
     }
 
+    void ActRel(){
+        byte[] bytes = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE));
+        ShowMessage(zzStringTrans.hex2str(bytes), true);
+    }
+    
     /**
      * 联网读卡
      * */
     public void ReadCard(){
-        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));//0XA10C
-        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_FindCARD_CONTROL));//0X2001
-        idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_SELECTCARD_CONTROL));//0X2002
-        byte[] bytes = idCardDriver.samCommandZ(android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_INTERNT_READCARD_FACEFINGER), ZzReader.BSENDBUF);//0X3020
+        idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));//0XA10C
+        idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_FindCARD_CONTROL));//0X2001
+        idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_SELECTCARD_CONTROL));//0X2002
+        byte[] bytes = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_INTERNT_READCARD_FACEFINGER), ZzReader.BSENDBUF);//0X3020
     }
 
     public String AnalysisTran(byte[] tran){
-        Log.e(TAG, "tran:" + android.serialport.api.zzStringTrans.hex2str(tran));
+        Log.e(TAG, "tran:" + zzStringTrans.hex2str(tran));
         short len=(short)(256 * tran[5] + tran[6]);
         byte[] out=new byte[len-4];
         Log.e(TAG, "len====" +len );
         System.arraycopy(tran,10,out,0,out.length);
-        Log.e(TAG, "out===" + android.serialport.api.zzStringTrans.hex2str(out) );
+        Log.e(TAG, "out===" + zzStringTrans.hex2str(out) );
         return jdkBase64Encode(out);
     }
 
@@ -764,8 +807,8 @@ public class MainActivity extends AppCompatActivity {
     void SerialGetAtr(){
         byte[] nRet = mSerialPortHelper.getAtrZ();
         if (nRet!=null){
-            Log.e(TAG, "nRet:" + android.serialport.api.zzStringTrans.hex2str(nRet));
-            ShowMessage("获取卡片成功，"+ android.serialport.api.zzStringTrans.hex2str(nRet), false);
+            Log.e(TAG, "nRet:" + zzStringTrans.hex2str(nRet));
+            ShowMessage("获取卡片成功，"+ zzStringTrans.hex2str(nRet), false);
         }else {
             ShowMessage("获取卡片失败", false);
         }
@@ -798,7 +841,7 @@ public class MainActivity extends AppCompatActivity {
     void SerialGetChipSN(){
         byte[] snbuf=new byte[64];
         int nRet=mSerialPortHelper.getChipSNZ(snbuf);
-        Log.e(TAG, "ver:" + android.serialport.api.zzStringTrans.hex2str(snbuf));
+        Log.e(TAG, "ver:" + zzStringTrans.hex2str(snbuf));
         if (nRet== ERRCODE_SUCCESS) {
             ShowMessage("获取获取芯片序列号成功，SchipSN:"+ android.serialport.api.zzStringTrans.byteToStr(snbuf), false);
         }else {
@@ -902,8 +945,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     byte[] bytes = mSerialPortHelper.samCommandZ(cmd);
 
-                    ShowMessage("SAM透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
-                    ShowMessage("SAM透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
+                    ShowMessage("SAM透传指令："+ zzStringTrans.hex2str(cmd), false);
+                    ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes), true);
                 } catch (Exception e) {
                     e.printStackTrace();
                     ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
@@ -924,8 +967,8 @@ public class MainActivity extends AppCompatActivity {
             }
             byte[] bytes = mSerialPortHelper.samCardCommandZ(cmd);
 
-            ShowMessage("SAM+身份证透传指令："+ android.serialport.api.zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM+身份证透传指令返回："+ android.serialport.api.zzStringTrans.hex2str(bytes), true);
+            ShowMessage("SAM+身份证透传指令："+ zzStringTrans.hex2str(cmd), false);
+            ShowMessage("SAM+身份证透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
@@ -947,8 +990,8 @@ public class MainActivity extends AppCompatActivity {
                 ShowMessage("APDU指令传输失败，错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
                 return;
             }
-            ShowMessage("APDU指令数据："+ android.serialport.api.zzStringTrans.hex2str(apducmd), false);
-            ShowMessage("APDU返回："+ android.serialport.api.zzStringTrans.hex2str(transceiveBuffer), true);
+            ShowMessage("APDU指令数据："+ zzStringTrans.hex2str(apducmd), false);
+            ShowMessage("APDU返回："+ zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
@@ -975,10 +1018,10 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
-                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
-                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
-                byte[] bytes = mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
+                mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(mSerialPortHelper.W_SAMID));//0XA10C
+                mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(mSerialPortHelper.W_FindCARD_CONTROL));//0X2001
+                mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(mSerialPortHelper.W_SELECTCARD_CONTROL));//0X2002
+                byte[] bytes = mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(mSerialPortHelper.W_INTERNET_READ),mSerialPortHelper.BSENDBUF);//0X3020
 
             }
         }).start();
@@ -993,19 +1036,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    byte[] cmd= android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_APPLY_AUTHORIZATION);
+                    byte[] cmd= MXDataCode.shortToByteArray(mSerialPortHelper.W_APPLY_AUTHORIZATION);
                     byte[] bytes = mSerialPortHelper.samCommandZ(cmd);
                     String author=AnalysisTranSerial(bytes);
                     RequestOnlineAuth.Data data = new RequestOnlineAuth.Data();
                     data.setAuthreq(author.trim().replace("\n",""));
                     RequestOnlineAuth requestOnlineAuth=new RequestOnlineAuth("" ,"zjzz", data);
-                    Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
+                    Response<ResponseOnlineAuth> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
                             .RequestOnlineAuth(requestOnlineAuth).execute();
                     if (execute.code()==200&&execute.body().getRet().equals("1")){
                         Log.e(TAG, "ex==" + execute.body().toString());
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
-                        byte[] aut= android.serialport.MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                        byte[] aut= MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                         byte[] realBytes = mSerialPortHelper.samCommandZ(aut,authresp_base);
                         ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
                         //                        ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
@@ -1025,17 +1068,17 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mSerialPortHelper.samCommandZ(android.serialport.MXDataCode.shortToByteArray(mSerialPortHelper.W_CHECK));
+                mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(mSerialPortHelper.W_CHECK));
                 byte[] sign= com.zzreader.MXDataCode.shortToByteArray(mSerialPortHelper.W_SIGN);
                 byte[] bytes = mSerialPortHelper.samCommandZ(sign);
-                Log.e(TAG, "sign_byte:" + android.serialport.api.zzStringTrans.hex2str(bytes));
+                Log.e(TAG, "sign_byte:" + zzStringTrans.hex2str(bytes));
             }
         }).start();
         return null;
     }
 
     public String AnalysisTranSerial(byte[] tran){
-        Log.e(TAG, "tran:" + android.serialport.api.zzStringTrans.hex2str(tran));
+        Log.e(TAG, "tran:" + zzStringTrans.hex2str(tran));
         int len=getLen(tran[4],tran[5]);
         byte[] out=new byte[len-3];
         System.arraycopy(tran,10,out,0,out.length);

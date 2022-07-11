@@ -32,6 +32,7 @@ public class SerialPortHelper {
     public static final short W_CHECK= (short) 0xA10C;
     public static final short W_SIGN=0x12FE;
     public static final short W_LOWPOWER=0x6201;
+    public static final short W_ACTIVEINFO=(short) 0xA10A;
 
     public static final short W_APPLY_AUTHORIZATION= (short) 0xA10D;
 
@@ -610,7 +611,7 @@ public class SerialPortHelper {
         final BigInteger sTemp3 = MXDataCode.byteArrayToBigInteger(temp3);
         final BigInteger sTemp4 = MXDataCode.byteArrayToBigInteger(temp4);
         final BigInteger sTemp5 = MXDataCode.byteArrayToBigInteger(temp5);
-        return String.format("%02d%02d%08d%010d%010d", sTemp1, sTemp2, sTemp3, sTemp4, sTemp5);
+        return String.format("%02d%02d%08d%010d", sTemp1, sTemp2, sTemp3, sTemp4);
     }
 
 }

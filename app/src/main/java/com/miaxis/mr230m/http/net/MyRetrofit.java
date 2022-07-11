@@ -48,6 +48,7 @@ public class MyRetrofit {
                         Request request = chain.request()
                                 .newBuilder()
                                 .addHeader("Content-Type", "application/json")
+                                .addHeader("Authorization","Basic WloxMjM6MjdhNDg1ZTUtYTkxMi00YWFlLTgxYTEtMGNhMjE1N2I1OTdk")
                                 .build();
 
                         return chain.proceed(request);

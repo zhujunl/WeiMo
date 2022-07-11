@@ -48,20 +48,20 @@ public class ResponseActiveInfo {
     }
 
     public class Data{
-        private String authresp;
+        private String activeinfo;
 
-        public String getAuthresp() {
-            return authresp;
+        public String getActiveinfo() {
+            return activeinfo;
         }
 
-        public void setAuthresp(String authresp) {
-            this.authresp = authresp;
+        public void setActiveinfo(String activeinfo) {
+            this.activeinfo = activeinfo;
         }
 
         @Override
         public String toString() {
             return "Data{" +
-                    "authresp='" + authresp + '\'' +
+                    "activeinfo='" + activeinfo + '\'' +
                     '}';
         }
     }
