@@ -1,7 +1,6 @@
 package android.serialport.api;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,7 +43,7 @@ public class SerialPortManager {
             this.serialPortStatus = true;
             threadStatus = false; //线程状态
             outputStream = new FileOutputStream(serialPort.getFd());
-            Log.e(TAG, "openSerialPort: 打开串口");
+            //Log.e(TAG, "openSerialPort: 打开串口");
             return serialPort;
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,10 +66,10 @@ public class SerialPortManager {
             if (serialPort!=null)
                 serialPort.close();
         } catch (IOException e) {
-            Log.e(TAG, "closeSerialPort: 关闭串口异常："+e.toString());
+            //Log.e(TAG, "closeSerialPort: 关闭串口异常："+e.toString());
             return;
         }
-        Log.e(TAG, "closeSerialPort: 关闭串口成功");
+        //Log.e(TAG, "closeSerialPort: 关闭串口成功");
     }
 
     /**
@@ -81,7 +80,7 @@ public class SerialPortManager {
         try {
             inputStream = new FileInputStream(serialPort.getFd());
             if (senddata.length > 0) {
-                Log.e(TAG, "send:" +zzStringTrans.hex2str(senddata) );
+                //Log.e(TAG, "send:" +zzStringTrans.hex2str(senddata) );
                 outputStream.flush();
                 outputStream.write(senddata);
                 outputStream.flush();
@@ -98,18 +97,18 @@ public class SerialPortManager {
                         }
                     }
                     size = inputStream.read(recvdata);
-//                    Log.e(TAG, "size = " + size);
+//                    //Log.e(TAG, "size = " + size);
                     if (size > 0){
-                        Log.e(TAG, "buffer:" + zzStringTrans.hex2str(recvdata) );
+                        //Log.e(TAG, "buffer:" + zzStringTrans.hex2str(recvdata) );
                     }
                     return size;
                 } catch (IOException e) {
-                    Log.e(TAG, "run: 数据读取异常：" +e.toString());
+                    //Log.e(TAG, "run: 数据读取异常：" +e.toString());
                     return ConStant.ERRCODE_TRANS;
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, "sendSerialPort: 串口数据发送失败："+e.toString());
+            //Log.e(TAG, "sendSerialPort: 串口数据发送失败："+e.toString());
             return ConStant.ERRCODE_TRANS;
         }
         return ConStant.ERRCODE_TRANS;
@@ -120,7 +119,7 @@ public class SerialPortManager {
         try {
             inputStream = new FileInputStream(serialPort.getFd());
             if (senddata.length > 0) {
-                Log.e(TAG, "send:" +zzStringTrans.hex2str(senddata) );
+                //Log.e(TAG, "send:" +zzStringTrans.hex2str(senddata) );
                 outputStream.flush();
                 outputStream.write(senddata);
                 outputStream.flush();
@@ -137,11 +136,11 @@ public class SerialPortManager {
                         }
                     }
                     size = inputStream.read(recvdata);
-                    Log.e(TAG, "size = " + size);
+                    //Log.e(TAG, "size = " + size);
                     if (size > 0){
-                        Log.e(TAG, "buffer:" + zzStringTrans.hex2str(recvdata) );
+                        //Log.e(TAG, "buffer:" + zzStringTrans.hex2str(recvdata) );
                     }
-                    Log.e(TAG, "start_inputStream.available()==" + inputStream.available());
+                    //Log.e(TAG, "start_inputStream.available()==" + inputStream.available());
                     while (inputStream.available() >0){
                         byte[] bb=new byte[inputStream.available()];
                         inputStream.read(bb);
@@ -149,16 +148,16 @@ public class SerialPortManager {
                         size+=bb.length;
                         SystemClock.sleep(100);
                     }
-                    Log.e(TAG, "end_inputStream.available()==" + inputStream.available());
+                    //Log.e(TAG, "end_inputStream.available()==" + inputStream.available());
 
                     return size;
                 } catch (IOException e) {
-                    Log.e(TAG, "run: 数据读取异常：" +e.toString());
+                    //Log.e(TAG, "run: 数据读取异常：" +e.toString());
                     return ConStant.ERRCODE_TRANS;
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, "sendSerialPort: 串口数据发送失败："+e.toString());
+            //Log.e(TAG, "sendSerialPort: 串口数据发送失败："+e.toString());
             return ConStant.ERRCODE_TRANS;
         }
         return ConStant.ERRCODE_TRANS;
@@ -181,8 +180,8 @@ public class SerialPortManager {
                         int size = inputStream.read(buffer);
                         Size=size;
                         data=buffer;
-                        Log.e(TAG, "size = " + size);
-                        Log.e(TAG, "buffer:" + zzStringTrans.hex2str(buffer) );
+                        //Log.e(TAG, "size = " + size);
+                        //Log.e(TAG, "buffer:" + zzStringTrans.hex2str(buffer) );
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

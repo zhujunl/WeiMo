@@ -18,8 +18,10 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.miaxis.mr230m.http.bean.RequestActiveInfo;
+import com.miaxis.mr230m.http.bean.RequestDeActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
+import com.miaxis.mr230m.http.bean.ResponseDeActiveInfo;
 import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
 import com.miaxis.mr230m.http.net.MyRetrofit;
 import com.zzreader.ConStant;
@@ -326,11 +328,8 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("读卡器未连接",false);
             return;
         }
-        if (isUsb){
-            ActRel();
-        }else {
-
-        }
+        mProgressDialog.show();
+        ActRel();
     }
 
 
@@ -411,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
         byte[] samid=new byte[256];
         int nRet=idCardDriver.getSAMIDZ(samid);
         String strSAMID=idCardDriver.SAMIDToNum(samid);
-        if (nRet== android.serialport.api.ConStant.ERRCODE_SUCCESS) {
+        if (nRet==ConStant.ERRCODE_SUCCESS) {
             ShowMessage("获取SAMID成功，SAMID:"+strSAMID, false);
         }else {
             ShowMessage("获取SAMID失败，错误码："+nRet, false);
@@ -509,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
         }
     }
 
@@ -530,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("SAM+身份证透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
         }
     }
 
@@ -547,14 +546,14 @@ public class MainActivity extends AppCompatActivity {
             //            byte[] apducmd=new byte[]{0x00, (byte) 0x84,0x00,0x00,0x08};
             byte[] transceiveBuffer = idCardDriver.transceive(apducmd);
             if (transceiveBuffer==null){
-                ShowMessage("APDU指令传输失败，错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
+                ShowMessage("APDU指令传输失败，错误码：  "+ConStant.ERRORCODE_APDU,false);
                 return;
             }
             ShowMessage("APDU指令数据："+ zzStringTrans.hex2str(apducmd), false);
             ShowMessage("APDU返回："+ zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
+            ShowMessage(e.getMessage()+"   错误码：  "+ConStant.ERRORCODE_APDU,false);
         }
     }
 
@@ -602,7 +601,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+                    ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
                 }
             }
         }).start();
@@ -715,37 +714,62 @@ public class MainActivity extends AppCompatActivity {
      * 激活
      * */
      void ActiveInfo(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
-                            .RequestActiveInfo(new RequestActiveInfo("", "11")).execute();
-                    if (execute.body().getRet().equals("1")){
-                        String activeinfo=execute.body().getData().getActiveinfo();
-                        byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
-                        byte[] c=new byte[50];
-                        System.arraycopy(bytes,bytes.length-50,c,0,c.length);
-                        Log.e("a:::",zzStringTrans.hex2str(c));
-                        if (isUsb){
-                            byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
-                            mProgressDialog.cancel();
-                            ShowMessage(zzStringTrans.hex2str(bytes1), false);
-                        }else {
-                            mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(SerialPortHelper.W_ACTIVEINFO),bytes);
-                        }
+        new Thread(() -> {
+            try {
+                Response<ResponseActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim())
+                        .RequestActiveInfo(new RequestActiveInfo("", "11")).execute();
+                if (execute.body().getRet().equals("1")){
+                    String activeinfo=execute.body().getData().getActiveinfo();
+                    byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
+                    byte[] c=new byte[50];
+                    System.arraycopy(bytes,bytes.length-50,c,0,c.length);
+                    if (isUsb){
+                        byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                        ShowMessage("激活成功", false);
+                    }else {
+                        byte[] bytes1 = mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(SerialPortHelper.W_ACTIVEINFO), bytes);
+                        ShowMessage("激活成功", false);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    ShowMessage(e.getMessage(), false);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                ShowMessage("激活失败"+e.getMessage(), false);
             }
         }).start();
     }
 
     void ActRel(){
-        byte[] bytes = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE));
-        ShowMessage(zzStringTrans.hex2str(bytes), true);
+         new Thread(() -> {
+             byte[] samid=new byte[256];
+             int nRet=isUsb?idCardDriver.getSAMIDZ(samid):mSerialPortHelper.getSAMIDZ(samid);
+             String strSAMID=isUsb?idCardDriver.SAMIDToNum(samid):mSerialPortHelper.SAMIDToNum(samid);
+             RequestDeActiveInfo.Data data=new RequestDeActiveInfo.Data();
+             data.setSamid_ascii(strSAMID);
+             if (nRet== ERRCODE_SUCCESS) {
+                 RequestDeActiveInfo entity=new RequestDeActiveInfo("","zjzz",data);
+                 try {
+                     Response<ResponseDeActiveInfo> execute = MyRetrofit.getApiService(ip.getText().toString().trim()).RequestDeActiveInfo(entity).execute();
+                     if (execute.code()==200){
+                         ResponseDeActiveInfo body = execute.body();
+                         String deactiveinfo = body.getData().getDeactiveinfo();
+                         byte[] bytes = jdkBase64Decode(deactiveinfo.getBytes());
+                         if (isUsb){
+                             byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE),bytes);
+                             ShowMessage("解除激活成功", false);
+                         }else {
+                             byte[] bytes1 = mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE),bytes);
+                             ShowMessage("解除激活成功", false);
+                         }
+
+                     }
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                     ShowMessage("解除激活失败"+e.getMessage(), false);
+                 }
+             }else {
+                 ShowMessage("解除激活失败:"+nRet, false);
+             }
+         }).start();
     }
     
     /**
@@ -843,7 +867,7 @@ public class MainActivity extends AppCompatActivity {
         int nRet=mSerialPortHelper.getChipSNZ(snbuf);
         Log.e(TAG, "ver:" + zzStringTrans.hex2str(snbuf));
         if (nRet== ERRCODE_SUCCESS) {
-            ShowMessage("获取获取芯片序列号成功，SchipSN:"+ android.serialport.api.zzStringTrans.byteToStr(snbuf), false);
+            ShowMessage("获取获取芯片序列号成功，SchipSN:"+ zzStringTrans.byteToStr(snbuf), false);
         }else {
             ShowMessage("获取获取芯片序列号失败，错误码："+nRet, false);
         }
@@ -922,7 +946,7 @@ public class MainActivity extends AppCompatActivity {
 
                 ShowMessage("读卡成功",false);
             }else {
-                ShowMessage("读卡失败，错误码"+ re + (re== android.serialport.api.ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
+                ShowMessage("读卡失败，错误码"+ re + (re==ConStant.ERRORCODE_NOCARD ?"  无卡":""),false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -949,7 +973,7 @@ public class MainActivity extends AppCompatActivity {
                     ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes), true);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+                    ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
                 }
             }
         }).start();
@@ -971,7 +995,7 @@ public class MainActivity extends AppCompatActivity {
             ShowMessage("SAM+身份证透传指令返回："+ zzStringTrans.hex2str(bytes), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+            ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
         }
     }
 
@@ -987,14 +1011,14 @@ public class MainActivity extends AppCompatActivity {
             //            byte[] apducmd=new byte[]{0x00, (byte) 0x84,0x00,0x00,0x08};
             byte[] transceiveBuffer = mSerialPortHelper.transceiveZ(apducmd);
             if (transceiveBuffer==null){
-                ShowMessage("APDU指令传输失败，错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
+                ShowMessage("APDU指令传输失败，错误码：  "+ConStant.ERRORCODE_APDU,false);
                 return;
             }
             ShowMessage("APDU指令数据："+ zzStringTrans.hex2str(apducmd), false);
             ShowMessage("APDU返回："+ zzStringTrans.hex2str(transceiveBuffer), true);
         } catch (Exception e) {
             e.printStackTrace();
-            ShowMessage(e.getMessage()+"   错误码：  "+ android.serialport.api.ConStant.ERRORCODE_APDU,false);
+            ShowMessage(e.getMessage()+"   错误码：  "+ConStant.ERRORCODE_APDU,false);
         }
     }
 
@@ -1055,7 +1079,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    ShowMessage(e.getMessage()+"   错误码： "+ android.serialport.api.ConStant.ERRORCODE_CMD,false);
+                    ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
                 }
             }
         }).start();

@@ -106,7 +106,7 @@
                 </RadioGroup>
                 <EditText
                     android:id="@+id/ip_edit"
-                    android:text="http://192.168.6.78:8080"
+                    android:text="http://47.112.101.132"
                     android:layout_width="220dp"
                     android:layout_height="wrap_content"/>
                 <Button
@@ -120,6 +120,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:visibility="invisible"
                     android:text="低功耗"
                     android:onClick="OnClickLowPower"
                     android:background="@drawable/button"/>

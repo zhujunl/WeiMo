@@ -200,9 +200,9 @@ public class UsbBase
             return -101;
         }
         iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
-        Log.e(TAG, "==========================================" );
-        Log.e("sendData:",zzStringTrans.hex2str(bSendBuf));
-//        Log.e("sendData_iRV:",""+iRV);
+         //Log.e(TAG, "==========================================" );
+         //Log.e("sendData:",zzStringTrans.hex2str(bSendBuf));
+//         //Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
 
@@ -212,9 +212,9 @@ public class UsbBase
             return -101;
         }
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-        Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
+         //Log.e("recvData:",zzStringTrans.hex2str(bRecvBuf));
 
-//        Log.e("iRecvLen:",""+iRecvLen);
+//         //Log.e("iRecvLen:",""+iRecvLen);
         return iRV;
     }
     

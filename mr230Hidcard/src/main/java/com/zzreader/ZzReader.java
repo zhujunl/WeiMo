@@ -138,13 +138,12 @@ public class ZzReader
      * */
     public synchronized int connectReaderZ(String reader){
         int iRet = ConStant.ERRCODE_SUCCESS;
-        iRet = this.m_usbBase.openDev(ConStant.VID, ConStant.PID);
-        if (iRet != 0) {
-            SystemClock.sleep(100);
+        for (int i = 0; i < 3; i++) {
             iRet = this.m_usbBase.openDev(ConStant.VID, ConStant.PID);
-            if (iRet!=0){
-                return iRet;
+            if (iRet==0){
+                break;
             }
+            SystemClock.sleep(100);
         }
         return iRet;
     }
