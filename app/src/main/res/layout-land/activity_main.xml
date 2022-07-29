@@ -80,291 +80,295 @@
             android:contentDescription="身份证"
             android:src="@drawable/card" />
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <RadioGroup
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <RadioButton
-                        android:id="@+id/usbRb"
-                        android:checked="true"
-                        android:text="usb"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                    <RadioButton
-                        android:id="@+id/serialRb"
-                        android:text="串口"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                </RadioGroup>
-                <EditText
-                    android:id="@+id/ip_edit"
-                    android:text="http://47.112.101.132"
-                    android:layout_width="220dp"
-                    android:layout_height="wrap_content"/>
-                <Button
-                    android:id="@+id/btn_clearMsg"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickAu"
-                    android:text="授权" />
-                <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="invisible"
-                    android:text="低功耗"
-                    android:onClick="OnClickLowPower"
-                    android:background="@drawable/button"/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <Button
-                    android:id="@+id/btn_connect"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickUsbConnect"
-                    android:text="@string/btn_connect" />
-                <Button
-                    android:id="@+id/btn_disconnect"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickUsbDisconnect"
-                    android:text="@string/btn_disconnect" />
-                <Button
-                    android:id="@+id/btn_boot"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickBoot"
-                    android:text="@string/btn_boot" />
-                <Button
-                    android:id="@+id/btn_activeInfo"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:text="激活"
-                    android:onClick="OnClickActive"/>
-            </LinearLayout>
+                    android:orientation="horizontal">
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/usbRb"
+                            android:checked="true"
+                            android:text="usb"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <RadioButton
+                            android:id="@+id/serialRb"
+                            android:text="串口"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </RadioGroup>
+                    <EditText
+                        android:id="@+id/ip_edit"
+                        android:text="http://47.112.101.132"
+                        android:layout_width="220dp"
+                        android:layout_height="wrap_content"/>
+                    <Button
+                        android:id="@+id/btn_clearMsg"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickAu"
+                        android:text="授权" />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="invisible"
+                        android:text="低功耗"
+                        android:onClick="OnClickLowPower"
+                        android:background="@drawable/button"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <Button
+                        android:id="@+id/btn_connect"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickUsbConnect"
+                        android:text="@string/btn_connect" />
+                    <Button
+                        android:id="@+id/btn_disconnect"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickUsbDisconnect"
+                        android:text="@string/btn_disconnect" />
+                    <Button
+                        android:id="@+id/btn_boot"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickBoot"
+                        android:text="@string/btn_boot" />
+                    <Button
+                        android:id="@+id/btn_activeInfo"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:text="激活"
+                        android:onClick="OnClickActive"/>
+                </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btn_cardFullInfo"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickCardFullInfo"
-                    android:text="@string/btn_cardFullInfo" />
-
-                <Button
-                    android:id="@+id/btn_devVersion"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickDevVersion"
-                    android:text="@string/btn_devVersion" />
-
-                <Button
-                    android:id="@+id/btn_SAMId"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickSAMId"
-                    android:text="@string/btn_SAMId" />
-                <Button
-                    android:id="@+id/btn_Act_re"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickActRel"
-                    android:text="解除激活" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btn_Sn"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickSN"
-                    android:text="@string/btn_Sn" />
-
-                <Button
-                    android:id="@+id/btn_chipSN"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickChipSN"
-                    android:text="@string/btn_chipSN" />
-
-
-                <Button
-                    android:id="@+id/btn_findCard"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickUsbgetAtr"
-                    android:text="@string/btn_findCard" />
-
-
-                <Button
-                    android:visibility="gone"
-                    android:id="@+id/btn_Serialport"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickPort"
-                    android:text="测试" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:id="@+id/edit_SAM"
-                    android:visibility="gone"
-                    android:inputType="number"
-                    android:layout_width="350dp"
-                    android:layout_height="wrap_content"/>
-                <RadioGroup
-                    android:layout_width="350dp"
-                    android:layout_gravity="center"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-                    <RadioButton
-                        android:id="@+id/Sam_nor"
-                        android:checked="true"
-                        android:text="12ff(正常指令)"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"/>
-                    <RadioButton
-                        android:id="@+id/Sam_error"
-                        android:text="12f3(异常指令)"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"/>
-                </RadioGroup>
-                <Button
-                    android:id="@+id/btn_SAM"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickSamCommand"
-                    android:text="@string/btn_SAM" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:visibility="gone"
-                    android:id="@+id/edit_SAM_CARD"
-                    android:inputType="number"
-                    android:layout_width="350dp"
-                    android:layout_height="wrap_content"/>
-                <RadioGroup
-                    android:layout_width="350dp"
-                    android:layout_gravity="center"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <RadioButton
-                        android:id="@+id/SamCard_nor"
-                        android:checked="true"
-                        android:text="12ff(正常指令)"
+                    <Button
+                        android:id="@+id/btn_cardFullInfo"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"/>
-                    <RadioButton
-                        android:id="@+id/SamCard_error"
-                        android:text="12f3(异常指令)"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"/>
-                </RadioGroup>
-                <Button
-                    android:id="@+id/btn_SAM_CARD"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickSamCardCommand"
-                    android:text="@string/btn_SAM_CARD" />
-            </LinearLayout>
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickCardFullInfo"
+                        android:text="@string/btn_cardFullInfo" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:id="@+id/edit_APDU"
-                    android:visibility="gone"
-                    android:inputType="number"
-                    android:layout_width="350dp"
-                    android:layout_height="wrap_content"/>
-                <RadioGroup
-                    android:layout_width="350dp"
-                    android:layout_gravity="center"
+                    <Button
+                        android:id="@+id/btn_devVersion"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickDevVersion"
+                        android:text="@string/btn_devVersion" />
+
+                    <Button
+                        android:id="@+id/btn_SAMId"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickSAMId"
+                        android:text="@string/btn_SAMId" />
+                    <Button
+                        android:id="@+id/btn_Act_re"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickActRel"
+                        android:text="解除激活" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-                    <RadioButton
-                        android:id="@+id/APDU1"
-                        android:checked="true"
-                        android:text="1234"
+
+                    <Button
+                        android:id="@+id/btn_Sn"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"/>
-                    <RadioButton
-                        android:id="@+id/APDU2"
-                        android:text="11111"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickSN"
+                        android:text="@string/btn_Sn" />
+
+                    <Button
+                        android:id="@+id/btn_chipSN"
                         android:layout_width="0dp"
                         android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickChipSN"
+                        android:text="@string/btn_chipSN" />
+
+
+                    <Button
+                        android:id="@+id/btn_findCard"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickUsbgetAtr"
+                        android:text="@string/btn_findCard" />
+
+
+                    <Button
+                        android:visibility="gone"
+                        android:id="@+id/btn_Serialport"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickPort"
+                        android:text="测试" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <EditText
+                        android:id="@+id/edit_SAM"
+                        android:visibility="gone"
+                        android:inputType="number"
+                        android:layout_width="350dp"
                         android:layout_height="wrap_content"/>
-                </RadioGroup>
-                <Button
-                    android:id="@+id/btn_APDU"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button"
-                    android:onClick="OnClickAPDU"
-                    android:text="@string/btn_APDU" />
+                    <RadioGroup
+                        android:layout_width="350dp"
+                        android:layout_gravity="center"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/Sam_nor"
+                            android:checked="true"
+                            android:text="12ff(正常指令)"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                        <RadioButton
+                            android:id="@+id/Sam_error"
+                            android:text="12f3(异常指令)"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                    </RadioGroup>
+                    <Button
+                        android:id="@+id/btn_SAM"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickSamCommand"
+                        android:text="@string/btn_SAM" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <EditText
+                        android:visibility="gone"
+                        android:id="@+id/edit_SAM_CARD"
+                        android:inputType="number"
+                        android:layout_width="350dp"
+                        android:layout_height="wrap_content"/>
+                    <RadioGroup
+                        android:layout_width="350dp"
+                        android:layout_gravity="center"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/SamCard_nor"
+                            android:checked="true"
+                            android:text="12ff(正常指令)"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                        <RadioButton
+                            android:id="@+id/SamCard_error"
+                            android:text="12f3(异常指令)"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                    </RadioGroup>
+                    <Button
+                        android:id="@+id/btn_SAM_CARD"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickSamCardCommand"
+                        android:text="@string/btn_SAM_CARD" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <EditText
+                        android:id="@+id/edit_APDU"
+                        android:visibility="gone"
+                        android:inputType="number"
+                        android:layout_width="350dp"
+                        android:layout_height="wrap_content"/>
+                    <RadioGroup
+                        android:layout_width="350dp"
+                        android:layout_gravity="center"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/APDU1"
+                            android:checked="true"
+                            android:text="1234"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                        <RadioButton
+                            android:id="@+id/APDU2"
+                            android:text="11111"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"/>
+                    </RadioGroup>
+                    <Button
+                        android:id="@+id/btn_APDU"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/button"
+                        android:onClick="OnClickAPDU"
+                        android:text="@string/btn_APDU" />
+                </LinearLayout>
+
+
+
             </LinearLayout>
-
-
-
-        </LinearLayout>
+        </ScrollView>
 
     </LinearLayout>
 

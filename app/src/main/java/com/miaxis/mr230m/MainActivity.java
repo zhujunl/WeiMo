@@ -130,7 +130,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickUsbDisconnect(View view){
-        mProgressDialog.show();
+        if(openFlag)
+            mProgressDialog.show();
         if (isUsb){
             UsbDisconnect();
         }else {
