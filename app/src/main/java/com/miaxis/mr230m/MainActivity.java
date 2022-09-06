@@ -17,12 +17,19 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.miaxis.mr230m.http.bean.BusInfo;
+import com.miaxis.mr230m.http.bean.DataJkm;
 import com.miaxis.mr230m.http.bean.RequestActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestDeActiveInfo;
+import com.miaxis.mr230m.http.bean.RequestJKM;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
+import com.miaxis.mr230m.http.bean.RequestReportIDInfo;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
 import com.miaxis.mr230m.http.bean.ResponseDeActiveInfo;
+import com.miaxis.mr230m.http.bean.ResponseJKM;
 import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
+import com.miaxis.mr230m.http.bean.ResponseReportIDInfo;
 import com.miaxis.mr230m.http.net.MyRetrofit;
 import com.zzreader.ConStant;
 import com.zzreader.ZzReader;
@@ -34,6 +41,8 @@ import org.zz.bean.IdCardParser;
 import java.io.IOException;
 
 import androidx.appcompat.app.AppCompatActivity;
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.zzreader.ConStant.ERRCODE_SUCCESS;
@@ -290,16 +299,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void OnClickPort(View view){
+    public void OnClickJKM(View view){
         if (!openFlag){
             ShowMessage("读卡器未连接",false);
             return;
         }
         mProgressDialog.show();
         if (isUsb){
-            ReadCard();
-        }else {
-            SReadCard();
+            UsbJkm();
         }
     }
 
@@ -620,7 +627,6 @@ public class MainActivity extends AppCompatActivity {
         if (check_bytes[10]==0x01){
             byte[] sign= MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
             byte[] sign_byte=idCardDriver.samCommandZ(sign);
-            Log.e(TAG, "sign_byte:" + zzStringTrans.hex2str(sign_byte));
             return  AnalysisTran(sign_byte);
         }else{
 
@@ -630,85 +636,124 @@ public class MainActivity extends AppCompatActivity {
 
     public void AnalysisCard(byte[] baseinf,String sign){
         try {
-            //            new Thread(new Runnable() {
-            //                @Override
-            //                public void run() {
-            byte[] pcSAMID=new byte[22];
-            byte[] pucRin=new byte[16];
-            byte[] pucT=new byte[32];
-            byte[] pucShortcode=new byte[16];
-            byte[] pucChkDataLenH=new byte[1];
-            byte[] pucChkDatalenL=new byte[1];
-            byte[] pucSign=new byte[64];
-            byte[] pucP=new byte[1024];
-            byte[] pucF=new byte[1024];
-            System.arraycopy(baseinf, 11, pcSAMID, 0, pcSAMID.length);
-            Log.e(TAG, "pcSAMID:" + zzStringTrans.hex2str(pcSAMID));
-            System.arraycopy(baseinf, 33, pucRin, 0, pucRin.length);
-            Log.e(TAG, "pucRin:" + zzStringTrans.hex2str(pucRin));
-            System.arraycopy(baseinf, 49, pucT, 0, pucT.length);
-            Log.e(TAG, "pucT:" + zzStringTrans.hex2str(pucT));
-            System.arraycopy(baseinf, 81, pucShortcode, 0, pucShortcode.length);
-            Log.e(TAG, "pucShortcode:" + zzStringTrans.hex2str(pucShortcode));
-            System.arraycopy(baseinf, 97, pucChkDataLenH, 0, pucChkDataLenH.length);
-            Log.e(TAG, "pucChkDataLenH:" + zzStringTrans.hex2str(pucChkDataLenH));
-            System.arraycopy(baseinf, 98, pucChkDatalenL, 0, pucChkDatalenL.length);
-            Log.e(TAG, "pucChkDatalenL:" + zzStringTrans.hex2str(pucChkDatalenL));
-            int a = pucChkDataLenH[0];
-            int b=pucChkDatalenL[0];
-            if (a<0){
-                a+=256;
-            }
-            if (b<0){
-                b+=256;
-            }
-            byte[] pucChkData=new byte[a*256+b];
-            Log.e(TAG, "pucChkData.length:" +pucChkData.length );
-            System.arraycopy(baseinf, 99, pucChkData, 0, pucChkData.length);
-            Log.e(TAG, "pucChkData:" + zzStringTrans.hex2str(pucChkData));
-            System.arraycopy(baseinf, 99+32+pucChkData.length, pucSign, 0, pucSign.length);
-            Log.e(TAG, "pucSign:" + zzStringTrans.hex2str(pucSign));
-            if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4)) {
-                System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4, pucP, 0, pucP.length);
-                Log.e(TAG, "pucP:" + zzStringTrans.hex2str(pucP));
-                ImageView img=findViewById(R.id.image_idcard);
-                Bitmap faceBit = IdCardParser.getBitmap(pucP);
-                img.setImageBitmap(faceBit);
-            }
-            if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4+1024)) {
-                System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4 + 1024, pucF, 0, pucF.length);
-                Log.e(TAG, "pucF:" + zzStringTrans.hex2str(pucF));
-            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    byte[] pcSAMID=new byte[22];
+                    byte[] pucRin=new byte[16];
+                    byte[] pucT=new byte[32];
+                    byte[] pucShortcode=new byte[16];
+                    byte[] pucChkDataLenH=new byte[1];
+                    byte[] pucChkDatalenL=new byte[1];
+                    byte[] pucSign=new byte[64];
+                    byte[] pucP=new byte[1024];
+                    byte[] pucF=new byte[1024];
+        //            System.arraycopy(baseinf, 11, pcSAMID, 0, pcSAMID.length);
+        //            Log.e(TAG, "pcSAMID:" + zzStringTrans.hex2str(pcSAMID));
+        //            System.arraycopy(baseinf, 33, pucRin, 0, pucRin.length);
+        //            Log.e(TAG, "pucRin:" + zzStringTrans.hex2str(pucRin));
+        //            System.arraycopy(baseinf, 49, pucT, 0, pucT.length);
+        //            Log.e(TAG, "pucT:" + zzStringTrans.hex2str(pucT));
+        //            System.arraycopy(baseinf, 81, pucShortcode, 0, pucShortcode.length);
+        //            Log.e(TAG, "pucShortcode:" + zzStringTrans.hex2str(pucShortcode));
+        //            System.arraycopy(baseinf, 97, pucChkDataLenH, 0, pucChkDataLenH.length);
+        //            Log.e(TAG, "pucChkDataLenH:" + zzStringTrans.hex2str(pucChkDataLenH));
+        //            System.arraycopy(baseinf, 98, pucChkDatalenL, 0, pucChkDatalenL.length);
+        //            Log.e(TAG, "pucChkDatalenL:" + zzStringTrans.hex2str(pucChkDatalenL));
+                    int a =baseinf[97];
+                    int b=baseinf[98];
+                    if (a<0){
+                        a+=256;
+                    }
+                    if (b<0){
+                        b+=256;
+                    }
+                    int count =a*256+b;
+    //            byte[] pucChkData=new byte[count];
+    //            Log.e(TAG, "pucChkData.length:" +pucChkData.length );
+    //            System.arraycopy(baseinf, 99, pucChkData, 0, pucChkData.length);
+    //            Log.e(TAG, "pucChkData:" + zzStringTrans.hex2str(pucChkData));
+    //            System.arraycopy(baseinf, 99+32+pucChkData.length, pucSign, 0, pucSign.length);
+    //            Log.e(TAG, "pucSign:" + zzStringTrans.hex2str(pucSign));
+    //            if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4)) {
+    //                System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4, pucP, 0, pucP.length);
+    //                Log.e(TAG, "pucP:" + zzStringTrans.hex2str(pucP));
+    //                ImageView img=findViewById(R.id.image_idcard);
+    //                Bitmap faceBit = IdCardParser.getBitmap(pucP);
+    //                img.setImageBitmap(faceBit);
+    //            }
+    //            if (baseinf.length>(99+32+pucChkData.length+pucSign.length+4+1024)) {
+    //                System.arraycopy(baseinf, 99 + 32 + pucChkData.length + pucSign.length + 4 + 1024, pucF, 0, pucF.length);
+    //                Log.e(TAG, "pucF:" + zzStringTrans.hex2str(pucF));
+    //            }
 
 
-            //                    byte[] framebytes=new byte[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+pucChkDataLenH.length+pucChkDatalenL.length+pucSign.length+pucChkData.length];
-            //                    System.arraycopy(pcSAMID,0,framebytes,0,pcSAMID.length);
-            //                    System.arraycopy(pucRin,0,framebytes,pcSAMID.length,pucRin.length);
-            //                    System.arraycopy(pucT,0,framebytes,pcSAMID.length+pucRin.length,pucT.length);
-            //                    System.arraycopy(pucShortcode,0,framebytes,pcSAMID.length+pucRin.length+pucT.length,pucShortcode.length);
-            //                    framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length]=(byte)(pucChkData.length >> 8 & 0xFF);
-            //                    framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+1]=(byte)(pucChkData.length & 0xFF);
-            //                    System.arraycopy(pucChkData,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+2,pucChkData.length);
-            //                    System.arraycopy(pucSign,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucChkData.length+pucShortcode.length+2,pucSign.length);
-            //                    Log.e(TAG, "framebytes:" + zzStringTrans.hex2str(framebytes));
-            //
-            //                    String framedata = jdkBase64Encode(framebytes);
+                    byte[] framebytes=new byte[152+count];
+    //                System.arraycopy(pcSAMID,0,framebytes,0,pcSAMID.length);
+    //                System.arraycopy(pucRin,0,framebytes,pcSAMID.length,pucRin.length);
+    //                System.arraycopy(pucT,0,framebytes,pcSAMID.length+pucRin.length,pucT.length);
+    //                System.arraycopy(pucShortcode,0,framebytes,pcSAMID.length+pucRin.length+pucT.length,pucShortcode.length);
+    //                framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length]=(byte)(pucChkData.length >> 8 & 0xFF);
+    //                framebytes[pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+1]=(byte)(pucChkData.length & 0xFF);
+    //                System.arraycopy(pucChkData,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucShortcode.length+2,pucChkData.length);
+    //                System.arraycopy(pucSign,0,framebytes,pcSAMID.length+pucRin.length+pucT.length+pucChkData.length+pucShortcode.length+2,pucSign.length);
+    //                Log.e(TAG, "framebytes:" + zzStringTrans.hex2str(framebytes));
+                    System.arraycopy(baseinf,11,framebytes,0,88);
+                    System.arraycopy(baseinf,99,framebytes,88,count);
+                    System.arraycopy(baseinf,99+count,framebytes,88+count,64);
 
-            //                    RequestReportIDInfo.Data data=new RequestReportIDInfo.Data(framedata.trim().replace("\n",""),sign.trim().replace("\n",""));
-            //                    RequestReportIDInfo requestReportIDInfo = new RequestReportIDInfo("","zjzz",data);
-            //                    Log.e(TAG, "requestReportIDInfo:" +requestReportIDInfo.toString() );
-            //                    Response<ResponseActiveInfo> execute = null;
-            //                    try {
-            //                        execute = MyRetrofit.getApiService(ip.getText().toString().trim()).RequestIDInfo(requestReportIDInfo).execute();
-            //                    } catch (IOException e) {
-            //                        e.printStackTrace();
-            //                    }
-            //                    Log.e(TAG, "execute:" +execute.toString() );
-            //                }
-            //            }).start();
+                    String framedata = jdkBase64Encode(framebytes);
+
+                    RequestReportIDInfo.Data data=new RequestReportIDInfo.Data(framedata.trim().replace("\n",""),sign.trim().replace("\n",""));
+                    RequestReportIDInfo requestReportIDInfo = new RequestReportIDInfo("","zjzz",data);
+                    Log.e(TAG, "requestReportIDInfo:" +requestReportIDInfo.toString() );
+                    Response<ResponseReportIDInfo> execute = null;
+                    try {
+                        execute = MyRetrofit.getApiService(ip.getText().toString().trim()).RequestIDInfo(requestReportIDInfo).execute();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "IOException:" +e.getMessage() );
+                    }
+                    Log.e(TAG, "execute:" +execute.toString() );
+                }
+            }).start();
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e(TAG, "Exception:" +e.getMessage() );
         }
+    }
+
+    public void UsbJkm(){
+        new Thread(() -> {
+            try {
+                byte[] jkm= idCardDriver.mxReadCardForJkm();
+                String framedata = jdkBase64Encode(jkm);
+                String samsigncert=jdkBase64Encode(getSign().getBytes());
+                DataJkm dataJkm=new DataJkm(framedata.trim().replace("\n",""),samsigncert.trim().replace("\n",""));
+                BusInfo busInfo=new BusInfo("11","222","3333");
+                RequestJKM requestJKM=new RequestJKM("","zjzz","A,1,2",dataJkm,busInfo);
+                Log.e(TAG, "requestJKM==" +requestJKM.toString() );
+                MyRetrofit.getApiService(ip.getText().toString().trim()).RequestJKM(requestJKM).enqueue(new Callback<ResponseJKM>() {
+                    @Override
+                    public void onResponse(Call<ResponseJKM> call, Response<ResponseJKM> response) {
+                        Gson gson=new Gson();
+                        String s = gson.toJson(response);
+                        Log.e(TAG, "RequestJKM成功:" + s);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseJKM> call, Throwable t) {
+                        Log.e(TAG, "RequestJKM失败：" + t.getMessage());
+                    }
+                });
+
+                ShowMessage("读卡成功",false);
+            } catch (Exception e) {
+                e.printStackTrace();
+                ShowMessage("读卡失败,"+e.getMessage(),false);
+            }
+
+        }).start();
     }
 
     /**
@@ -784,12 +829,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String AnalysisTran(byte[] tran){
-        Log.e(TAG, "tran:" + zzStringTrans.hex2str(tran));
         short len=(short)(256 * tran[5] + tran[6]);
         byte[] out=new byte[len-4];
-        Log.e(TAG, "len====" +len );
         System.arraycopy(tran,10,out,0,out.length);
-        Log.e(TAG, "out===" + zzStringTrans.hex2str(out) );
         return jdkBase64Encode(out);
     }
 

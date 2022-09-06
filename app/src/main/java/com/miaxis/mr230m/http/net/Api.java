@@ -2,10 +2,12 @@ package com.miaxis.mr230m.http.net;
 
 import com.miaxis.mr230m.http.bean.RequestActiveInfo;
 import com.miaxis.mr230m.http.bean.RequestDeActiveInfo;
+import com.miaxis.mr230m.http.bean.RequestJKM;
 import com.miaxis.mr230m.http.bean.RequestOnlineAuth;
 import com.miaxis.mr230m.http.bean.RequestReportIDInfo;
 import com.miaxis.mr230m.http.bean.ResponseActiveInfo;
 import com.miaxis.mr230m.http.bean.ResponseDeActiveInfo;
+import com.miaxis.mr230m.http.bean.ResponseJKM;
 import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
 import com.miaxis.mr230m.http.bean.ResponseReportIDInfo;
 
@@ -32,4 +34,24 @@ public interface Api {
 
     @POST("/decryptservice/deactiveinfo")
     Call<ResponseDeActiveInfo> RequestDeActiveInfo(@Body RequestDeActiveInfo entity);
+
+
+    @POST("/decryptservice/jkm")
+    Call<ResponseJKM> RequestJKM(@Body RequestJKM entity);
+
+//        @POST("/decryptservice/activeinfo")
+    //    Call<ResponseActiveInfo> RequestActiveInfo(@Body RequestActiveInfo entity);
+    //
+    //    @POST("/decryptservice/onlineauth")
+    //    Call<ResponseOnlineAuth> RequestOnlineAuth(@Body RequestOnlineAuth entity);
+    //
+    //    @POST("/decryptservice/idinfo")
+    //    Call<ResponseReportIDInfo> RequestIDInfo(@Body RequestReportIDInfo entity);
+    //
+    //    @POST("/decryptservice/deactiveinfo")
+    //    Call<ResponseDeActiveInfo> RequestDeActiveInfo(@Body RequestDeActiveInfo entity);
+    //
+    //
+    //    @POST("/decryptservice/jkm")
+    //    Call<ResponseJKM> RequestJKM(@Body RequestJKM entity);
 }

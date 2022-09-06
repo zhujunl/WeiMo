@@ -241,14 +241,13 @@
 
 
                     <Button
-                        android:visibility="gone"
                         android:id="@+id/btn_Serialport"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:background="@drawable/button"
-                        android:onClick="OnClickPort"
-                        android:text="测试" />
+                        android:onClick="OnClickJKM"
+                        android:text="获取健康码" />
                 </LinearLayout>
 
                 <LinearLayout
