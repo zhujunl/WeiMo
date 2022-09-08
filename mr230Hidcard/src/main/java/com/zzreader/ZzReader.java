@@ -1095,7 +1095,7 @@ public class ZzReader
         }
         int len=a*256+b;
         System.arraycopy(oPackDataBuffer,89+len+32+64+4,PucPHMsg,0,puiPHMsgLen[0]);
-        System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,PucFPMsg,0,PucFPMsg[0]);
+        System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,PucFPMsg,0,puiFPMsgLen[0]);
         return result[0];
     }
 
@@ -1182,8 +1182,6 @@ public class ZzReader
         int len=a*256+b;
         byte[] data=new byte[len+184];
         System.arraycopy(oPackDataBuffer,1,data,0,data.length);
-//        System.arraycopy(oPackDataBuffer,1,data,0,88+len);
-//        System.arraycopy(oPackDataBuffer,89+len+32,data,88+len,64);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4,photo,0,photo.length);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,finger,0,finger.length);
         return data;

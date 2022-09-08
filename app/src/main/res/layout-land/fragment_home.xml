@@ -230,15 +230,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:hint="指纹1:"
-                android:text="@{`指纹1:` + cardInfo.fingerprint0}"/>
+                android:text="指纹1:"/>
             <TextView
                 android:id="@+id/finger2"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:hint="指纹2:"
-                android:text="@{`指纹2:` + cardInfo.fingerprint0}"/>
+                android:text="指纹2:"/>
 
         </LinearLayout>
 

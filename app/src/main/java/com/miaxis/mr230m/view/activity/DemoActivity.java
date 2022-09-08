@@ -3,10 +3,10 @@ package com.miaxis.mr230m.view.activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.miaxis.mr230m.App;
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.ActivityMian2Binding;
 import com.miaxis.mr230m.service.TokenService;
-import com.miaxis.mr230m.util.mkUtil;
 import com.miaxis.mr230m.view.fragment.HomeFragment;
 import com.miaxis.mr230m.viewmodel.DemoViewModel;
 
@@ -28,7 +28,7 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
     @Override
     protected void initView(@NonNull ActivityMian2Binding binding, @Nullable Bundle savedInstanceState) {
         fragmentManager=getSupportFragmentManager();
-        mkUtil.init(this);
+        App.getInstance().init();
         nvTo(new HomeFragment());
         viewModel=new ViewModelProvider(this).get(DemoViewModel.class);
         viewModel.UsbConnect(this);

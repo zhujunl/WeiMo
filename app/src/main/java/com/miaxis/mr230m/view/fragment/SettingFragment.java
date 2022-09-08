@@ -64,7 +64,6 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             }
         });
         binding.btnOnlineauthinfo.setOnClickListener(v -> {
-
             if (mode) {
                 viewModel.OnlineAuth(jkmIp);
             }else {

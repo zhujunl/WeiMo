@@ -471,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             try {
-                                idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
+                                idCardRecord.setFingerprint0(bFingerData0);
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             try {
-                                idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
+                                idCardRecord.setFingerprint1(bFingerData1);
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -979,7 +979,7 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     try {
-                        idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
+                        idCardRecord.setFingerprint0(bFingerData0);
                     }catch (Exception e){
                         e.printStackTrace();
                     }
@@ -989,7 +989,7 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     try {
-                        idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
+                        idCardRecord.setFingerprint1(bFingerData1);
                     }catch (Exception e){
                         e.printStackTrace();
                     }

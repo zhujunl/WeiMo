@@ -213,7 +213,7 @@ public class UsbBase
         }
         iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
 //         Log.e("UsbrecvData:",zzStringTrans.hex2str(bRecvBuf));
-
+//        Log.e(TAG, "iRV==" +iRV );
 //         //Log.e("iRecvLen:",""+iRecvLen);
         return iRV;
     }

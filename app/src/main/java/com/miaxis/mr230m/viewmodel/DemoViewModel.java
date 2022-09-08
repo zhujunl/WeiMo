@@ -180,45 +180,17 @@ public class DemoViewModel extends ViewModel {
                     System.arraycopy(baseinf,0,start,0,start.length);
                     System.arraycopy(baseinf,16,end,0,end.length);
                     idCardRecord.setValidateStart(IdCardParser.unicode2String(start));
-                    Log.e(TAG, "start=" + zzStringTrans.hex2str(start));
                     idCardRecord.setValidateEnd(IdCardParser.unicode2String(end));
-                    Log.e(TAG, "end=" + zzStringTrans.hex2str(end));
                     Bitmap faceBit = IdCardParser.getBitmap(photo);
                     idCardRecord.setCardBitmap(faceBit);
-                    if (re == 0) {
-                        byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
-                        byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
-                        try {
-                            System.arraycopy(fpimg, 0, bFingerData0, 0, bFingerData0.length);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        try {
-                            System.arraycopy(fpimg, 512, bFingerData1, 0, bFingerData1.length);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        try {
-                            idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        try {
-                            idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        try {
-                            idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        try {
-                            idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
+                    byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
+                    byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
+                    System.arraycopy(fpimg, 0, bFingerData0, 0, bFingerData0.length);
+                    System.arraycopy(fpimg, 512, bFingerData1, 0, bFingerData1.length);
+                    idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
+                    idCardRecord.setFingerprint0(bFingerData0);
+                    idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
+                    idCardRecord.setFingerprint1(bFingerData1);
                     IDCardLiveData.postValue(idCardRecord);
                     ShowMessage("读卡成功",false);
                 }else {
@@ -262,9 +234,9 @@ public class DemoViewModel extends ViewModel {
                 System.arraycopy(fpimg, 0, bFingerData0, 0, bFingerData0.length);
                 System.arraycopy(fpimg, 512, bFingerData1, 0, bFingerData1.length);
                 idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
-                idCardRecord.setFingerprint0(Base64.encodeToString(bFingerData0, Base64.NO_WRAP));
+                idCardRecord.setFingerprint0(bFingerData0);
                 idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
-                idCardRecord.setFingerprint1(Base64.encodeToString(bFingerData1, Base64.NO_WRAP));
+                idCardRecord.setFingerprint1(bFingerData1);
 
 
                 String framedata = jdkBase64Encode(jkm);
@@ -543,11 +515,10 @@ public class DemoViewModel extends ViewModel {
                 if (execute.body().getRet().equals("1")){
                     String activeinfo=execute.body().getData().getActiveinfo();
                     byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
-                    byte[] c=new byte[50];
-                    System.arraycopy(bytes,bytes.length-50,c,0,c.length);
                     byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
-                    Log.e(TAG, "bytes1==" + zzStringTrans.hex2str(bytes1));
-                    ShowMessage("激活成功", false);
+                    if (bytes1!=null){
+                        ShowMessage("激活成功", false);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
