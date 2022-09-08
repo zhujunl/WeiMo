@@ -647,26 +647,31 @@ public class DemoViewModel extends ViewModel {
     }
 
     public void getToken(){
-        String ip=mkUtil.getInstance().decodeString("weiIp","");
-        String cid=mkUtil.getInstance().decodeString("cid","95d0047549ef4300b6448fa18e87b268");
-        if (TextUtils.isEmpty(ip)){
-            return;
-        }
-        MiaxisRetrofit.TokenService(ip).getToken(cid).enqueue(new MyCallback<TokenResonse>() {
-            @Override
-            public void onSuccess(TokenResonse tokenResonse) {
-                if (tokenResonse.getCode()==200){
-                    mkUtil.getInstance().encode("token",tokenResonse.getData().getAccess_token());
-                    mkUtil.getInstance().encode("tokenTime",tokenResonse.getData().getExpires_in());
-                }else {
-                    Log.e(TAG, "失败：" +tokenResonse.getMsg() );
+        try {
+            String ip=mkUtil.getInstance().decodeString("weiIp","");
+            String cid=mkUtil.getInstance().decodeString("cid","95d0047549ef4300b6448fa18e87b268");
+            if (TextUtils.isEmpty(ip)){
+                return;
+            }
+            MiaxisRetrofit.TokenService(ip).getToken(cid).enqueue(new MyCallback<TokenResonse>() {
+                @Override
+                public void onSuccess(TokenResonse tokenResonse) {
+                    if (tokenResonse.getCode()==200){
+                        mkUtil.getInstance().encode("token",tokenResonse.getData().getAccess_token());
+                        mkUtil.getInstance().encode("tokenTime",tokenResonse.getData().getExpires_in());
+                    }else {
+                        Log.e(TAG, "失败：" +tokenResonse.getMsg() );
+                    }
                 }
-            }
 
-            @Override
-            public void onFailed(Throwable t) {
-                Log.e(TAG, "错误:" +t.getMessage() );
-            }
-        });
+                @Override
+                public void onFailed(Throwable t) {
+                    Log.e(TAG, "错误:" +t.getMessage() );
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

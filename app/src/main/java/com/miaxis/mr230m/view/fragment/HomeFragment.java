@@ -1,5 +1,6 @@
 package com.miaxis.mr230m.view.fragment;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -27,6 +28,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
     private DemoViewModel viewModel;
     private FingerViewModel fingerModel;
     private IDCardRecord idCardRecord;
+    private ProgressDialog mProgressDialog;
     String TAG="HomeFragment";
 
     @Override
@@ -36,9 +38,15 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
 
     @Override
     protected void initView(@NonNull FragmentHomeBinding binding, @Nullable Bundle savedInstanceState) {
+        mProgressDialog=new ProgressDialog(getActivity());
+        mProgressDialog.setMessage("请稍后");
+        mProgressDialog.setCancelable(false);
         viewModel=new ViewModelProvider(getActivity()).get(DemoViewModel.class);
         fingerModel=new ViewModelProvider(this).get(FingerViewModel.class);
         fingerModel.match.observe(this, integer -> {
+            if (mProgressDialog.isShowing()){
+                mProgressDialog.cancel();
+            }
             if (integer==0){
                 binding.result.setText("操作结果:指纹比对成功");
             }else {
@@ -49,10 +57,16 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             binding.imageIdcard.setImageBitmap(bitmap);
         });
         viewModel.resultLiveData.observe(this, result -> {
+            if (mProgressDialog.isShowing()){
+                mProgressDialog.cancel();
+            }
             binding.result.setText("操作结果:"+result.getMsg());
         });
         viewModel.IDCardLiveData.observe(this, idCardRecord -> {
             Log.d(TAG, "IDCardLiveData==" +idCardRecord.toString() );
+            if (mProgressDialog.isShowing()){
+                mProgressDialog.cancel();
+            }
             this.idCardRecord=idCardRecord;
             binding.setCardInfo(idCardRecord);
             binding.finger1.setText("指纹1："+ Base64.encodeToString(idCardRecord.getFingerprint0(),Base64.DEFAULT));
@@ -64,10 +78,20 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
         String weiIp = mkUtil.getInstance().decodeString("weiIp","");
         String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
         binding.HomeSetting.setOnClickListener(v -> nvTo(new SettingFragment()));
-        binding.btnReadVerify.setOnClickListener(v -> viewModel.UsbReadIDCardMsgVerify());
-        binding.btnReadFull.setOnClickListener(v -> viewModel.UsbReadIDCardMsg(token,weiIp));
-        binding.btnHealthVerify.setOnClickListener(v->viewModel.UsbJkm(jkmIp));
+        binding.btnReadVerify.setOnClickListener(v -> {
+            mProgressDialog.show();
+            viewModel.UsbReadIDCardMsgVerify();
+        });
+        binding.btnReadFull.setOnClickListener(v -> {
+            mProgressDialog.show();
+            viewModel.UsbReadIDCardMsg(token, weiIp);
+        });
+        binding.btnHealthVerify.setOnClickListener(v-> {
+            mProgressDialog.show();
+            viewModel.UsbJkm(jkmIp);
+        });
         binding.btnFingerVerify.setOnClickListener(v -> {
+            binding.result.setText("请按压手指");
             this.fingerModel.readFinger();
         });
         binding.btnFaceVerify.setOnClickListener(v -> {

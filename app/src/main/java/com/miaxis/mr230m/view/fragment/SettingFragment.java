@@ -1,5 +1,6 @@
 package com.miaxis.mr230m.view.fragment;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -22,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider;
 public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding> {
     private DemoViewModel viewModel;
     String TAG="SettingFragment";
+    private ProgressDialog mProgressDialog;
     boolean mode;
 
     @Override
@@ -31,9 +33,15 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
 
     @Override
     protected void initView(@NonNull FragmentSettingBinding binding, @Nullable Bundle savedInstanceState) {
+        mProgressDialog=new ProgressDialog(getActivity());
+        mProgressDialog.setMessage("请稍后");
+        mProgressDialog.setCancelable(false);
         viewModel=new ViewModelProvider(getActivity()).get(DemoViewModel.class);
         viewModel.resultLiveData.observe(this, result -> {
             binding.result.setText("结果："+result.getMsg());
+            if (mProgressDialog.isShowing()){
+                mProgressDialog.cancel();
+            }
         });
         String weiIp = mkUtil.getInstance().decodeString("weiIp","");
         String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
@@ -50,6 +58,7 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
         binding.JkmIp.setText(TextUtils.isEmpty(jkmIp)?"":jkmIp);
         binding.jkmSwitch.setChecked(mode);
         binding.btnActiveinfo.setOnClickListener(v -> {
+            mProgressDialog.show();
             if (mode){
                 viewModel.ActiveInfo(jkmIp);
             }else {
@@ -57,6 +66,7 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             }
         });
         binding.btnDeactiveinfo.setOnClickListener(v -> {
+            mProgressDialog.show();
             if (mode) {
                 viewModel.ActRel(jkmIp);
             }else {
@@ -64,6 +74,7 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             }
         });
         binding.btnOnlineauthinfo.setOnClickListener(v -> {
+            mProgressDialog.show();
             if (mode) {
                 viewModel.OnlineAuth(jkmIp);
             }else {
