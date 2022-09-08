@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider;
 public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding> {
     private DemoViewModel viewModel;
     String TAG="SettingFragment";
+    boolean mode;
 
     @Override
     protected int initLayout() {
@@ -37,18 +38,41 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
         String weiIp = mkUtil.getInstance().decodeString("weiIp","");
         String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
         String token = mkUtil.getInstance().decodeString("token", "");
+        mode=mkUtil.getInstance().decodeBool("jkm",false);
         binding.back.setOnClickListener(v -> finish());
         binding.save.setOnClickListener(v -> {
             mkUtil.getInstance().encode("weiIp",binding.WeiIp.getText().toString().trim());
             mkUtil.getInstance().encode("jkmIp",binding.JkmIp.getText().toString().trim());
+            mkUtil.getInstance().encode("jkm",mode);
             finish();
         });
         binding.WeiIp.setText(TextUtils.isEmpty(weiIp)?"":weiIp);
         binding.JkmIp.setText(TextUtils.isEmpty(jkmIp)?"":jkmIp);
-        binding.btnActiveinfo.setOnClickListener(v -> viewModel.ActiveInfo(token,weiIp));
-        binding.btnDeactiveinfo.setOnClickListener(v -> viewModel.ActRel(token,weiIp));
-        binding.btnOnlineauthinfo.setOnClickListener(v -> viewModel.OnlineAuth(token,weiIp));
+        binding.jkmSwitch.setChecked(mode);
+        binding.btnActiveinfo.setOnClickListener(v -> {
+            if (mode){
+                viewModel.ActiveInfo(jkmIp);
+            }else {
+                viewModel.ActiveInfo(token, weiIp);
+            }
+        });
+        binding.btnDeactiveinfo.setOnClickListener(v -> {
+            if (mode) {
+                viewModel.ActRel(jkmIp);
+            }else {
+                viewModel.ActRel(token, weiIp);
+            }
+        });
+        binding.btnOnlineauthinfo.setOnClickListener(v -> {
+
+            if (mode) {
+                viewModel.OnlineAuth(jkmIp);
+            }else {
+                viewModel.OnlineAuth(token, weiIp);
+            }
+        });
         binding.btnActiveState.setOnClickListener(v -> viewModel.ActiveState());
         binding.btnCertificate.setOnClickListener(v -> viewModel.getSign());
+        binding.jkmSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mode=isChecked);
     }
 }

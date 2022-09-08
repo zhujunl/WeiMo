@@ -94,10 +94,19 @@
             android:id="@+id/btnReadFull"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:text="读取全部信息"
             app:layout_constraintStart_toStartOf="@id/btnReadVerify"
             app:layout_constraintTop_toBottomOf="@id/btnReadVerify"/>
+
+        <Button
+            android:id="@+id/btnHealthVerify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="核验健康状态"
+            app:layout_constraintTop_toBottomOf="@id/btnReadFull"
+            app:layout_constraintStart_toStartOf="@id/btnReadFull"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cardMsg"
@@ -249,14 +258,6 @@
             android:text="    核验指纹    "
             app:layout_constraintTop_toBottomOf="@id/btnFaceVerify"
             app:layout_constraintStart_toStartOf="@id/btnFaceVerify"/>
-
-        <Button
-            android:id="@+id/btnHealthVerify"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="核验健康状态"
-            app:layout_constraintTop_toBottomOf="@id/btnFingerVerify"
-            app:layout_constraintStart_toStartOf="@id/btnFingerVerify"/>
 
         <TextView
             android:id="@+id/result"

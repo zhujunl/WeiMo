@@ -1106,7 +1106,7 @@ public class ZzReader
         final byte[] oRecvDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oRecvLen = { oRecvDataBuffer.length };
         final int[] result = { 0 };
-        lRV = this.SendIDCardPack(ZzReader.CMD_INTERNT_READCARD_JKM, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
+        lRV = this.SendIDCardPack(ZzReader.CMD_INTERNT_READCARD_FACEFINGER, BSENDBUF, BSENDBUF.length, oPackDataBuffer, oPackLen);
         if (lRV != ConStant.ERRCODE_SUCCESS) {
             return null;
         }
@@ -1137,7 +1137,7 @@ public class ZzReader
             b+=256;
         }
         int len=a*256+b;
-        byte[] data=new byte[len+152];
+        byte[] data=new byte[len+184];
         System.arraycopy(oPackDataBuffer,1,data,0,data.length);
         return data;
     }
@@ -1180,9 +1180,10 @@ public class ZzReader
             b+=256;
         }
         int len=a*256+b;
-        byte[] data=new byte[len+152];
-        System.arraycopy(oPackDataBuffer,1,data,0,88+len);
-        System.arraycopy(oPackDataBuffer,89+len+32,data,88+len,64);
+        byte[] data=new byte[len+184];
+        System.arraycopy(oPackDataBuffer,1,data,0,data.length);
+//        System.arraycopy(oPackDataBuffer,1,data,0,88+len);
+//        System.arraycopy(oPackDataBuffer,89+len+32,data,88+len,64);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4,photo,0,photo.length);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,finger,0,finger.length);
         return data;

@@ -31,6 +31,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
+        <Switch
+            android:id="@+id/jkmSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="健康码模式"
+            app:layout_constraintLeft_toRightOf="@id/title"
+            app:layout_constraintTop_toTopOf="@id/title"
+            app:layout_constraintBottom_toBottomOf="@id/title"/>
+
         <Button
             android:id="@+id/save"
             android:layout_width="wrap_content"
@@ -57,7 +67,7 @@
                 android:id="@+id/WeiIp"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:text="http://47.112.101.132"/>
+                android:text="http://192.168.11.183/prod-api"/>
         </LinearLayout>
 
         <LinearLayout
@@ -77,7 +87,8 @@
             <EditText
                 android:id="@+id/JkmIp"
                 android:layout_width="300dp"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="http://47.112.101.132"/>
         </LinearLayout>
 
         <LinearLayout

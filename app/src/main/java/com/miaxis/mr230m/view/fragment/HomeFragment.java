@@ -40,10 +40,11 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
 
         String token = mkUtil.getInstance().decodeString("token", "");
         String weiIp = mkUtil.getInstance().decodeString("weiIp","");
+        String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
         binding.HomeSetting.setOnClickListener(v -> nvTo(new SettingFragment()));
         binding.btnReadVerify.setOnClickListener(v -> viewModel.UsbReadIDCardMsgVerify());
         binding.btnReadFull.setOnClickListener(v -> viewModel.UsbReadIDCardMsg(token,weiIp));
-
+        binding.btnHealthVerify.setOnClickListener(v->viewModel.UsbJkm(jkmIp));
     }
 
 
