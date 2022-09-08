@@ -10,7 +10,7 @@
         android:background="@color/white"
         android:layout_width="700dp"
         android:layout_height="400dp">
-        <SurfaceView
+        <com.miaxis.mr230m.view.fragment.CameraTextureView
             android:id="@+id/surface"
             android:layout_width="match_parent"
             android:layout_height="450dp"

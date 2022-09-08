@@ -1,6 +1,9 @@
 package com.miaxis.mr230m.view.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.miaxis.mr230m.App;
@@ -29,6 +32,11 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
     protected void initView(@NonNull ActivityMian2Binding binding, @Nullable Bundle savedInstanceState) {
         fragmentManager=getSupportFragmentManager();
         App.getInstance().init();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 0x99);
+            }
+        }
         nvTo(new HomeFragment());
         viewModel=new ViewModelProvider(this).get(DemoViewModel.class);
         viewModel.UsbConnect(this);

@@ -37,6 +37,11 @@ public class App extends Application {
         intent.putExtra("type",0x12);
         intent.putExtra("value",true);
         context.sendBroadcast(intent);
+
+        Intent i = new Intent("com.miaxis.power");
+        i.putExtra("type",0x11);
+        i.putExtra("value",true);
+        context.sendBroadcast(i);
     }
 
     public static App getInstance() {
