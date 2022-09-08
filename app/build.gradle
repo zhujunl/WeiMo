@@ -6,7 +6,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "com.miaxis.mr230m"
+        applicationId "com.miaxis.mr230"
         minSdk 19
         targetSdk 31
         versionCode 1
@@ -29,6 +29,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    buildFeatures {
+        dataBinding true
+    }
 }
 
 dependencies {
@@ -46,7 +50,10 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.1.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.3.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation "androidx.lifecycle:lifecycle-livedata:2.2.0"
 
+    implementation 'com.tencent:mmkv:1.0.11'
 
     implementation 'com.aill:AndroidSerialPort:1.0.8'
 

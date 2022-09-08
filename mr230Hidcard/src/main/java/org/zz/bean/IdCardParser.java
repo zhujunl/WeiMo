@@ -245,7 +245,7 @@ public  class IdCardParser {
         }
     }
 
-    private static String unicode2String(byte[] bytes) {
+    public static String unicode2String(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length / 2; i++) {
             int a = bytes[2 * i + 1];

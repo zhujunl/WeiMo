@@ -829,7 +829,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String AnalysisTran(byte[] tran){
-        short len=(short)(256 * tran[5] + tran[6]);
+        int a=tran[5];
+        int b=tran[6];
+        if (a<0){
+            a+=256;
+        }
+        if (b<0){
+            b+=256;
+        }
+        short len=(short)(256 * a + b);
         byte[] out=new byte[len-4];
         System.arraycopy(tran,10,out,0,out.length);
         return jdkBase64Encode(out);
