@@ -1,28 +1,22 @@
 package com.miaxis.mr230m.viewmodel;
 
+import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.os.Handler;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.miaxis.mr230m.mr990.camera.CameraConfig;
 import com.miaxis.mr230m.mr990.camera.CameraHelper;
-import com.miaxis.mr230m.mr990.camera.CameraPreviewCallback;
 import com.miaxis.mr230m.mr990.camera.MXCamera;
 import com.miaxis.mr230m.mr990.camera.MXFrame;
 import com.miaxis.mr230m.mr990.response.ZZResponse;
-import com.miaxis.mr230m.util.ListUtils;
 
 import org.zz.api.MXFace;
-import org.zz.api.MXFaceIdAPI;
-import org.zz.api.MXImageToolsAPI;
-import org.zz.api.MXResult;
 import org.zz.api.MxImage;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,7 +25,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 
-public class PreviewViewModel extends ViewModel implements CameraPreviewCallback {
+public class PreviewViewModel extends ViewModel{
 
     private static final String TAG = "PreviewViewModel";
     private Handler mHandler = new Handler();
@@ -79,43 +73,43 @@ public class PreviewViewModel extends ViewModel implements CameraPreviewCallback
     /**
      * 处理可见光视频帧数据
      */
-    private synchronized void Process_Rgb(MXFrame frame) {
-        Log.e(TAG, "Process_Rgb====" );
-        if (!MXFrame.isBufferEmpty(frame) && MXFrame.isSizeLegal(frame)) {
-            MXResult<byte[]> mxResult = MXImageToolsAPI.getInstance().YUV2RGB(frame.buffer, frame.width, frame.height);//MR90 10ms
-            if (MXResult.isSuccess(mxResult)) {
-                MXResult<MxImage> imageZoom = MXImageToolsAPI.getInstance().ImageZoom(new MxImage(frame.width, frame.height, mxResult.getData()),
-                        frame.width / 2, frame.height / 2);
-                if (MXResult.isSuccess(imageZoom)) {
-                    MXResult<MxImage> imageRotate = MXImageToolsAPI.getInstance().ImageRotate(
-                            imageZoom.getData(),
-                            CameraConfig.Camera_RGB.bufferOrientation);
-                    if (MXResult.isSuccess(imageRotate)) {
-                        MxImage mxImage = imageRotate.getData();
-                        MXResult<List<MXFace>> detectFace = MXFaceIdAPI.getInstance().mxDetectFace(
-                                mxImage.buffer, mxImage.width, mxImage.height);//MR90 40--100ms
-                        if (MXResult.isSuccess(detectFace)) {
-                            List<RectF> list = new ArrayList<>();
-                            List<MXFace> data = detectFace.getData();
-                            for (MXFace mxFace : data) {
-                                RectF faceRectF = mxFace.getFaceRectF();
-                                faceRectF.left = faceRectF.left * 2;
-                                faceRectF.top = faceRectF.top * 2;
-                                faceRectF.right = faceRectF.right * 2;
-                                faceRectF.bottom = faceRectF.bottom * 2;
-                                list.add(faceRectF);
-                            }
-                            if (!ListUtils.isNullOrEmpty(data)) {
-                                this.StartCountdown.postValue(true);
-                            }
-                            boolean b = this.CurrentMxImage_Rgb.compareAndSet(null, new AbstractMap.SimpleEntry<>(mxImage, MXFaceIdAPI.getInstance().getMaxFace(data)));
+    private synchronized void Process_Rgb(byte[] faceData) {
+//        MXResult<byte[]> mxResult = MXImageToolsAPI.getInstance().YUV2RGB(faceData, 640,480);//MR90 10ms
+//        if (MXResult.isSuccess(mxResult)) {
+//            MXResult<MxImage> imageZoom = MXImageToolsAPI.getInstance().ImageZoom(new MxImage(640, 480, mxResult.getData()),
+//                    640 / 2, 480/ 2);
+//            if (MXResult.isSuccess(imageZoom)){
+//                MXResult<MxImage> imageRotate = MXImageToolsAPI.getInstance().ImageRotate(
+//                        imageZoom.getData(),
+//                        CameraConfig.Camera_RGB.bufferOrientation);
+//                if (MXResult.isSuccess(imageRotate)) {
+//                    MxImage mxImage = imageRotate.getData();
+//                    MXResult<List<MXFace>> detectFace = MXFaceIdAPI.getInstance().mxDetectFace(
+//                            mxImage.buffer, mxImage.width, mxImage.height);//MR90 40--100ms
+//                    if (MXResult.isSuccess(detectFace)) {
+//                        List<RectF> list = new ArrayList<>();
+//                        List<MXFace> data = detectFace.getData();
+//                        for (MXFace mxFace : data) {
+//                            RectF faceRectF = mxFace.getFaceRectF();
+//                            faceRectF.left=faceRectF.left*2;
+//                            faceRectF.top=faceRectF.top*2;
+//                            faceRectF.right=faceRectF.right*2;
+//                            faceRectF.bottom=faceRectF.bottom*2;
+//                            list.add(faceRectF);
+//                        }
+//                        MXFace maxFace = MXFaceIdAPI.getInstance().getMaxFace(data);
+//                        MXResult<byte[]> featureExtract = MXFaceIdAPI.getInstance().mxFeatureExtract(mxImage.buffer, mxImage.width, mxImage.height, maxFace);
+//                        if (!MXResult.isSuccess(featureExtract)) {
+//                            Log.e(TAG, "!MXResult.isSuccess(featureExtract)" );
+//                            return;
+//                        }
+//                        MXResult<Float> result = MXFaceIdAPI.getInstance().mxFeatureMatch(featureExtract.getData(),null);
+//                    }
+//                }
+//            }
+//        }
 
-                            return;
-                        }
-                    }
-                }
-            }
-        }
+
     }
 
     /**
@@ -157,23 +151,74 @@ public class PreviewViewModel extends ViewModel implements CameraPreviewCallback
     private void Process_Nir(MXFrame frame) {
 
     }
+    Bitmap faceBitmap;
+
+    Camera camera;
+
+    public void setFaceBitmap(Bitmap faceBitmap) {
+        this.faceBitmap = faceBitmap;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(faceBitmap.getByteCount());
+        faceBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+        MxImage i=new MxImage(faceBitmap.getWidth(), faceBitmap.getHeight(), outputStream.toByteArray());
+    }
 
     /**
      * 开启可见光预览
      */
     public void showRgbCameraPreview(SurfaceTexture surface) {
-        ZZResponse<MXCamera> mxCamera = CameraHelper.getInstance().createOrFindMXCamera(CameraConfig.Camera_RGB);
-        if (ZZResponse.isSuccess(mxCamera)) {
-            MXCamera camera = mxCamera.getData();
-            int startTexture = camera.startTexture(surface);
-            if (startTexture == 0) {
-                mxCamera.getData().setPreviewCallback(PreviewViewModel.this);
-                startRgbFrame();
-            } else {
-                Log.e(TAG, "Preview failed");
-                return;
+//        ZZResponse<MXCamera> mxCamera = CameraHelper.getInstance().createOrFindMXCamera(CameraConfig.Camera_RGB);
+//        if (ZZResponse.isSuccess(mxCamera)) {
+//            MXCamera camera = mxCamera.getData();
+//            int startTexture = camera.startTexture(surface);
+//            if (startTexture == 0) {
+//                mxCamera.getData().setPreviewCallback(new CameraPreviewCallback() {
+//                    @Override
+//                    public void onPreview(MXCamera camera, MXFrame frame) {
+//
+//                    }
+//                });
+//                startRgbFrame();
+//            } else {
+//                Log.e(TAG, "Preview failed");
+//                return;
+//            }
+//        }
+        try {
+            for (int i = 0; i < 3; i++) {
+                camera=Camera.open(0);
+                if (camera!=null){
+                    break;
+                }
             }
+            Camera.Parameters parameters = this.camera.getParameters();
+            parameters.setPreviewSize(640,480);
+            parameters.setPictureSize(640,480);
+            camera.setParameters(parameters);
+            camera.setDisplayOrientation(270);
+            camera.setPreviewTexture(surface);
+            camera.setPreviewCallback(new Camera.PreviewCallback() {
+                @Override
+                public void onPreviewFrame(byte[] data, Camera camera) {
+                    Process_Rgb(data);
+                }
+            });
+            camera.startPreview();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    public void stopRgbCameraPreview(){
+      try {
+          if (camera != null) {
+              camera.setPreviewCallback(null);
+              camera.stopPreview();
+              camera.release();
+              camera = null;
+          }
+      } catch (Exception e) {
+          e.printStackTrace();
+      }
     }
 
     /**
@@ -191,17 +236,6 @@ public class PreviewViewModel extends ViewModel implements CameraPreviewCallback
      */
     private void processLiveAndMatch() {
 
-    }
-
-    @Override
-    public void onPreview(MXCamera camera, MXFrame frame) {
-        if (camera.getCameraId() == CameraConfig.Camera_RGB.CameraId) {
-            Log.e(TAG, "Camera_RGB" );
-            this.Process_Rgb(frame);
-        } else {
-            Log.e(TAG, "Process_Nir" );
-            this.Process_Nir(frame);
-        }
     }
 
 

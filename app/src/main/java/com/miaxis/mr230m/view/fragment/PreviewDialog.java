@@ -16,7 +16,6 @@ import android.widget.Button;
 
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.mr990.camera.CameraConfig;
-import com.miaxis.mr230m.mr990.camera.CameraHelper;
 import com.miaxis.mr230m.viewmodel.PreviewViewModel;
 
 import androidx.annotation.NonNull;
@@ -59,8 +58,8 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
         window.setGravity(Gravity.CENTER); //可设置dialog的位置
         window.getDecorView().setPadding(0, 0, 0, 0); //消除边距
         WindowManager.LayoutParams lp = window.getAttributes();
-        lp.width = 800;   //设置宽度充满屏幕
-        lp.height = 500;
+        lp.width = 640;   //设置宽度充满屏幕
+        lp.height = 560;
         window.setAttributes(lp);
         return dialog;
     }
@@ -95,7 +94,8 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
     public void onDestroyView() {
         super.onDestroyView();
         Log.e(TAG, "onDestroyView" );
-        CameraHelper.getInstance().stop();
+        mViewModel.stopRgbCameraPreview();
+//        CameraHelper.getInstance().stop();
         mViewModel.destroy();
     }
 
@@ -115,7 +115,7 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
 
     @Override
     public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
-        CameraHelper.getInstance().stop();
+        mViewModel.stopRgbCameraPreview();
         return false;
     }
 

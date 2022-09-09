@@ -4,12 +4,14 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.FragmentHomeBinding;
 import com.miaxis.mr230m.util.mkUtil;
 import com.miaxis.mr230m.viewmodel.DemoViewModel;
 import com.miaxis.mr230m.viewmodel.FingerViewModel;
+import com.miaxis.mr230m.viewmodel.PreviewViewModel;
 
 import org.zz.bean.IDCardRecord;
 
@@ -27,6 +29,7 @@ import androidx.lifecycle.ViewModelProvider;
 public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
     private DemoViewModel viewModel;
     private FingerViewModel fingerModel;
+    private PreviewViewModel previewModel;
     private IDCardRecord idCardRecord;
     private ProgressDialog mProgressDialog;
     String TAG="HomeFragment";
@@ -43,6 +46,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
         mProgressDialog.setCancelable(false);
         viewModel=new ViewModelProvider(getActivity()).get(DemoViewModel.class);
         fingerModel=new ViewModelProvider(this).get(FingerViewModel.class);
+        previewModel=new ViewModelProvider(this).get(PreviewViewModel.class);
         fingerModel.match.observe(this, integer -> {
             if (mProgressDialog.isShowing()){
                 mProgressDialog.cancel();
@@ -67,12 +71,31 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             if (mProgressDialog.isShowing()){
                 mProgressDialog.cancel();
             }
+            if(idCardRecord!=null){
+                binding.result.setText("操作结果:读卡成功");
+            }
             this.idCardRecord=idCardRecord;
+            binding.timeTxt.setVisibility(View.VISIBLE);
             binding.setCardInfo(idCardRecord);
             binding.finger1.setText("指纹1："+ Base64.encodeToString(idCardRecord.getFingerprint0(),Base64.DEFAULT));
             binding.finger2.setText("指纹2："+Base64.encodeToString(idCardRecord.getFingerprint1(),Base64.DEFAULT));
-            fingerModel.setFinger(idCardRecord.getFingerprint0(),idCardRecord.getFingerprint1());
             binding.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
+            fingerModel.setFinger(idCardRecord.getFingerprint0(),idCardRecord.getFingerprint1());
+            previewModel.setFaceBitmap(idCardRecord.getCardBitmap());
+        });
+        viewModel.ActiveInfoResult.observe(this, integer -> {
+
+            switch (integer) {
+                case 0:
+                    binding.weiTip.setText("微模自动授权成功");
+                    break;
+                case -1:
+                    binding.weiTip.setText("微模自动激活成功");
+                    break;
+                default:
+                    binding.weiTip.setText("微模自动授权失败");
+                    break;
+            }
         });
         String token = mkUtil.getInstance().decodeString("token", "");
         String weiIp = mkUtil.getInstance().decodeString("weiIp","");

@@ -1,7 +1,7 @@
 <resources>
 
     <string name="title_name">MR-230M</string>
-    <string name="app_name">MR-230Mlianw</string>
+    <string name="app_name">微模块演示程序</string>
 
 
     <string name="btn_clearMsg">清空显示信息</string>

@@ -10,6 +10,7 @@ import com.miaxis.mr230m.App;
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.ActivityMian2Binding;
 import com.miaxis.mr230m.service.TokenService;
+import com.miaxis.mr230m.util.mkUtil;
 import com.miaxis.mr230m.view.fragment.HomeFragment;
 import com.miaxis.mr230m.viewmodel.DemoViewModel;
 
@@ -41,6 +42,12 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
         viewModel=new ViewModelProvider(this).get(DemoViewModel.class);
         viewModel.UsbConnect(this);
         viewModel.getToken();
+        viewModel.isConnect.observe(this, aBoolean -> {
+            String token = mkUtil.getInstance().decodeString("token", "");
+            String weiIp = mkUtil.getInstance().decodeString("weiIp","");
+//            viewModel.ActiveInfoAuto(token,weiIp);
+        });
+
         Intent intent=new Intent(this, TokenService.class);
         startService(intent);
     }

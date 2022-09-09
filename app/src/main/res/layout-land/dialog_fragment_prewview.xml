@@ -8,17 +8,17 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:background="@color/white"
-        android:layout_width="700dp"
-        android:layout_height="400dp">
+        android:layout_width="640px"
+        android:layout_height="560px">
         <com.miaxis.mr230m.view.fragment.CameraTextureView
             android:id="@+id/surface"
             android:layout_width="match_parent"
-            android:layout_height="450dp"
+            android:layout_height="480px"
             app:layout_constraintTop_toTopOf="parent"/>
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="80px"
             android:text="取消"
             app:layout_constraintBottom_toBottomOf="parent"/>
 

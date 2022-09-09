@@ -24,19 +24,19 @@ import retrofit2.http.Query;
  * @updateDes
  */
 public interface WeiAPi {
-    @POST("oms/oms/micromodule/activeinfo")
+    @POST("/prod-api/oms/oms/micromodule/activeinfo")
     Call<WResponseActiveinfo> Activeinfo(@Body WRequestActiveinfo entity);
-    @POST("oms/oms/micromodule/deactiveinfo")
+    @POST("/prod-api/oms/oms/micromodule/deactiveinfo")
     Call<WResponseDeactiveInfo> DeactiveInfo(@Body WRequestDeactiveInfo entity);
-    @POST("oms/oms/micromodule/onlineauthinfo")
+    @POST("/prod-api/oms/oms/micromodule/onlineauthinfo")
     Call<WResponseOnlineauthInfo> OnlineauthInfo(@Body WRequestOnlineauthInfo entity);
-    @POST("oms/oms/micromodule/idinfo")
+    @POST("/prod-api/oms/oms/micromodule/idinfo")
     Call<WResponseIdInfo> IdInfo(@Body WRequestIdInfo entity);
 
 
-    @POST("oms/oms/login")
+    @POST("/prod-api/oms/oms/login")
     Call<TokenResonse> getToken(@Query("cid") String cid);
-    @POST("oms/oms/refresh")
+    @POST("/prod-api/oms/oms/refresh")
     Call<TokenRefreshResonse> RefreshToken();
 
 

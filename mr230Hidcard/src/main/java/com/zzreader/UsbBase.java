@@ -199,9 +199,9 @@ public class UsbBase
         if (iSendLen > bSendBuf.length) {
             return -101;
         }
-        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
+//        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
          //Log.e(TAG, "==========================================" );
-//         Log.e("UsbsendData:",zzStringTrans.hex2str(bSendBuf));
+         Log.d("UsbsendData:",zzStringTrans.hex2str(bSendBuf));
 //         //Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
@@ -211,8 +211,8 @@ public class UsbBase
         if (iRecvLen > bRecvBuf.length) {
             return -101;
         }
-        iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-//         Log.e("UsbrecvData:",zzStringTrans.hex2str(bRecvBuf));
+//        iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
+         Log.d("UsbrecvData:",zzStringTrans.hex2str(bRecvBuf));
 //        Log.e(TAG, "iRV==" +iRV );
 //         //Log.e("iRecvLen:",""+iRecvLen);
         return iRV;

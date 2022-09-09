@@ -32,6 +32,7 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
         <Switch
+            android:visibility="gone"
             android:id="@+id/jkmSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -71,6 +72,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/JKM"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
