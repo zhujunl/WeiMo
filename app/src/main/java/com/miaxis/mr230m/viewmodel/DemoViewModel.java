@@ -61,7 +61,7 @@ public class DemoViewModel extends ViewModel {
 
     public SingleLiveEvent<Result> resultLiveData=new SingleLiveEvent<>();
     public SingleLiveEvent<IDCardRecord> IDCardLiveData=new SingleLiveEvent<>();
-    public SingleLiveEvent<Integer> ActiveInfoResult=new SingleLiveEvent<>();
+    public MutableLiveData<Result> ActiveInfoResult=new MutableLiveData<>();
     public MutableLiveData<Boolean> isConnect=new MutableLiveData<>();
 
 
@@ -369,6 +369,7 @@ public class DemoViewModel extends ViewModel {
         if (check_bytes[10]==0x01){
             byte[] sign= MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
             byte[] sign_byte=idCardDriver.samCommandZ(sign);
+            Log.e(TAG, "UsbJkm_sign=" + zzStringTrans.hex2str(sign_byte));
             return  AnalysisTran(sign_byte);
         }
         return null;
@@ -469,6 +470,7 @@ public class DemoViewModel extends ViewModel {
                 byte[] photo=new byte[1024];
                 byte[] fpimg=new byte[1024];
                 byte[] jkm= idCardDriver.readIDCardMsgZ(photo,fpimg);
+                Log.e(TAG, "UsbJkm_jkm=" + zzStringTrans.hex2str(jkm));
                 String framedata = jdkBase64Encode(jkm);
                 String samsigncert=getSign();
                 DataJkm dataJkm=new DataJkm(framedata,samsigncert);
@@ -705,59 +707,66 @@ public class DemoViewModel extends ViewModel {
     }
 
     public void ActiveInfoAuto(String token,String ip){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    byte[] CMD_CHECK = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));
-                    if (CMD_CHECK==null){
-                        Log.e(TAG, "ActiveInfoAuto检查激活状态失败" );
-                        return;
-                    }
-                    if (CMD_CHECK[10]==1){
-                        String samid=UsbGetSAMID();
-                        String mdeviceid=mkUtil.getInstance().decodeString("mdeviceid",null);
-                        String cid=mkUtil.getInstance().decodeString("cid","226062ee9fba4316ac0357f86de259a3");
-                        byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
-                        byte[] bytes = idCardDriver.samCommandZ(cmd);
-                        String author=AnalysisTran(bytes).trim().replace("\n","");
-                        WRequestOnlineauthInfo wRequestOnlineauthInfo=new WRequestOnlineauthInfo(cid,mdeviceid,samid,encodeBusiness(cid,samid,"onlineauthinfo"),author);
-                        Response<WResponseOnlineauthInfo> execute = MiaxisRetrofit.getApiService(token, ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
+        new Thread(() -> {
+            try {
+                byte[] CMD_CHECK = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));
+                if (CMD_CHECK==null){
+                    Log.e(TAG, "ActiveInfoAuto检查激活状态失败" );
+                    ActiveInfoResult.postValue(new Result("微模查激活状态失败",false));
+                    return;
+                }
+                if (CMD_CHECK[10]==1){
+                    String samid=UsbGetSAMID();
+                    String mdeviceid=mkUtil.getInstance().decodeString("mdeviceid",null);
+                    String cid=mkUtil.getInstance().decodeString("cid","226062ee9fba4316ac0357f86de259a3");
+                    byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                    byte[] bytes = idCardDriver.samCommandZ(cmd);
+                    String author=AnalysisTran(bytes).trim().replace("\n","");
+                    WRequestOnlineauthInfo wRequestOnlineauthInfo=new WRequestOnlineauthInfo(cid,mdeviceid,samid,encodeBusiness(cid,samid,"onlineauthinfo"),author);
+                    Response<WResponseOnlineauthInfo> execute = MiaxisRetrofit.getApiService(token, ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
+                    if (execute.body().getCode()==200){
                         String authresp = execute.body().getData().getAuthresp();
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
                         byte[] aut= MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                         byte[] realBytes = idCardDriver.samCommandZ(aut,authresp_base);
-                        ActiveInfoResult.postValue(realBytes[9]==-112?0:(int)realBytes[9]);
+                        ActiveInfoResult.postValue(new Result(realBytes[9]==-112?"":String.valueOf((int)realBytes[9]),realBytes[9]==-112));
                     }else {
-                        String samid=UsbGetSAMID();
-                        String cid=mkUtil.getInstance().decodeString("cid","226062ee9fba4316ac0357f86de259a3");
-                        WRequestActiveinfo entity=new WRequestActiveinfo(cid,samid,encodeBusiness(cid,samid,"activeinfo"));
-                        Response<WResponseActiveinfo> execute = MiaxisRetrofit.getApiService(token, ip).Activeinfo(entity).execute();
-                        WResponseActiveinfo body = execute.body();
-                        if (body.getCode()==200){
-                            String mdeviceid=body.getData().getMdeviceid();
-                            String activeinfo = body.getData().getActiveinfo();
-                            byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
-                            byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
-                            if ((int)bytes1[9]==-112){
-                                byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
-                                byte[] autnor = idCardDriver.samCommandZ(cmd);
-                                String author=AnalysisTran(autnor).trim().replace("\n","");
-                                WRequestOnlineauthInfo wRequestOnlineauthInfo=new WRequestOnlineauthInfo(cid,mdeviceid,samid,encodeBusiness(cid,samid,"onlineauthinfo"),author);
-                                Response<WResponseOnlineauthInfo> executeOnlinea = MiaxisRetrofit.getApiService(token, ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
+                        ActiveInfoResult.postValue(new Result("微模自动授权失败,"+execute.body().getMsg(),false));
+                    }
+                }else {
+                    String samid=UsbGetSAMID();
+                    String cid=mkUtil.getInstance().decodeString("cid","226062ee9fba4316ac0357f86de259a3");
+                    WRequestActiveinfo entity=new WRequestActiveinfo(cid,samid,encodeBusiness(cid,samid,"activeinfo"));
+                    Response<WResponseActiveinfo> execute = MiaxisRetrofit.getApiService(token, ip).Activeinfo(entity).execute();
+                    WResponseActiveinfo body = execute.body();
+                    if (body.getCode()==200){
+                        String mdeviceid=body.getData().getMdeviceid();
+                        String activeinfo = body.getData().getActiveinfo();
+                        byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
+                        byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                        if ((int)bytes1[9]==-112){
+                            byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                            byte[] autnor = idCardDriver.samCommandZ(cmd);
+                            String author=AnalysisTran(autnor).trim().replace("\n","");
+                            WRequestOnlineauthInfo wRequestOnlineauthInfo=new WRequestOnlineauthInfo(cid,mdeviceid,samid,encodeBusiness(cid,samid,"onlineauthinfo"),author);
+                            Response<WResponseOnlineauthInfo> executeOnlinea = MiaxisRetrofit.getApiService(token, ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
+                            if (executeOnlinea.body().getCode()==200){
                                 String authresp = executeOnlinea.body().getData().getAuthresp();
                                 byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
                                 byte[] aut= MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                                 byte[] realBytes = idCardDriver.samCommandZ(aut,authresp_base);
-                                ActiveInfoResult.postValue(realBytes[9]==-112?0:(int)realBytes[9]);
-                            }
-                        }else {
-                            ActiveInfoResult.postValue(-1);
+                                ActiveInfoResult.postValue(new Result(realBytes[9]==-112?"":String.valueOf((int)realBytes[9]),realBytes[9]==-112));
+                            }else {
+                                ActiveInfoResult.postValue(new Result("微模自动授权失败,"+execute.body().getMsg(),false));}
+
                         }
+                    }else {
+                        ActiveInfoResult.postValue(new Result("微模自动激活失败,"+body.getMsg(),false));
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ActiveInfoResult.postValue(new Result("微模自动授权失败,"+e.getMessage(),false));
             }
         }).start();
 

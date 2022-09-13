@@ -147,12 +147,12 @@ public class UsbBase
         final UsbManager usbManager = (UsbManager)this.m_ctx.getSystemService("usb");
         final HashMap<String, UsbDevice> map = (HashMap<String, UsbDevice>)usbManager.getDeviceList();
         for (final UsbDevice device : map.values()) {
-            if (!usbManager.hasPermission(device)) {
-                final PendingIntent pi = PendingIntent.getBroadcast(this.m_ctx, 0, new Intent("com.android.example.USB_PERMISSION"), 0);
-                usbManager.requestPermission(device, pi);
-                return ConStant.ERRCODE_DEVICE;
-            }
             if (vid == device.getVendorId() && pid == device.getProductId()) {
+                if (!usbManager.hasPermission(device)) {
+                    final PendingIntent pi = PendingIntent.getBroadcast(this.m_ctx, 0, new Intent("com.android.example.USB_PERMISSION"), 0);
+                    usbManager.requestPermission(device, pi);
+                    return ConStant.ERRCODE_DEVICE;
+                }
                 this.m_usbDevice = device;
                 this.m_usbInterface = this.m_usbDevice.getInterface(0);
                 this.m_inEndpoint = this.m_usbInterface.getEndpoint(0);
@@ -199,9 +199,9 @@ public class UsbBase
         if (iSendLen > bSendBuf.length) {
             return -101;
         }
-//        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
+        iRV=this.m_connection.controlTransfer( 0x21, 0x09, 0x200, 0, bSendBuf, iSendLen, iTimeOut);
          //Log.e(TAG, "==========================================" );
-         Log.d("UsbsendData:",zzStringTrans.hex2str(bSendBuf));
+//         Log.d("Usb——sendData:",zzStringTrans.hex2str(bSendBuf));
 //         //Log.e("sendData_iRV:",""+iRV);
         return iRV;
     }
@@ -211,8 +211,8 @@ public class UsbBase
         if (iRecvLen > bRecvBuf.length) {
             return -101;
         }
-//        iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
-         Log.d("UsbrecvData:",zzStringTrans.hex2str(bRecvBuf));
+        iRV=this.m_connection.controlTransfer( 0xA1, 0x01, 0x100, 0, bRecvBuf, iRecvLen, iTimeOut);
+//         Log.d("Usb——recvData:",zzStringTrans.hex2str(bRecvBuf));
 //        Log.e(TAG, "iRV==" +iRV );
 //         //Log.e("iRecvLen:",""+iRecvLen);
         return iRV;

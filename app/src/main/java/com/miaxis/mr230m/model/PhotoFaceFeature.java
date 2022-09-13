@@ -1,5 +1,7 @@
 package com.miaxis.mr230m.model;
 
+import java.util.Arrays;
+
 public class PhotoFaceFeature {
 
     private byte[] faceFeature;
@@ -28,5 +30,13 @@ public class PhotoFaceFeature {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotoFaceFeature{" +
+                "faceFeature=" + Arrays.toString(faceFeature) +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

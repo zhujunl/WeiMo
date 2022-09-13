@@ -209,6 +209,75 @@ public class MXFaceInfoEx {
         return out;
     }
 
+    public static int Int2MXFaceInfoEx(int iFaceNum, int[] iFaceInfo, MXFaceInfoEx[] pMXFaceInfoEx) {
+        for (int i = 0; i < iFaceNum; i++) {
+            pMXFaceInfoEx[i].x         = iFaceInfo[i * MXFaceInfoEx.SIZE];
+            pMXFaceInfoEx[i].y         = iFaceInfo[i * MXFaceInfoEx.SIZE + 1];
+            pMXFaceInfoEx[i].width     = iFaceInfo[i * MXFaceInfoEx.SIZE + 2];
+            pMXFaceInfoEx[i].height    = iFaceInfo[i * MXFaceInfoEx.SIZE + 3];
+            pMXFaceInfoEx[i].keypt_num = iFaceInfo[i * MXFaceInfoEx.SIZE + 4];
+            for (int j = 0; j < MAX_KEY_POINT_NUM; j++)
+            {
+                pMXFaceInfoEx[i].keypt_x[j] = iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + j];
+                pMXFaceInfoEx[i].keypt_y[j] = iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + j + MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            }
+            pMXFaceInfoEx[i].quality      = iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].eyeDistance  = iFaceInfo[i * MXFaceInfoEx.SIZE + 8 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+
+            pMXFaceInfoEx[i].expression   = iFaceInfo[i * MXFaceInfoEx.SIZE + 21 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].mask         = iFaceInfo[i * MXFaceInfoEx.SIZE + 28 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].liveness     = iFaceInfo[i * MXFaceInfoEx.SIZE + 29 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].age          = iFaceInfo[i * MXFaceInfoEx.SIZE + 30 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].gender       = iFaceInfo[i * MXFaceInfoEx.SIZE + 31 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].pitch        = iFaceInfo[i * MXFaceInfoEx.SIZE + 32 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].yaw          = iFaceInfo[i * MXFaceInfoEx.SIZE + 33 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].roll         = iFaceInfo[i * MXFaceInfoEx.SIZE + 34 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].detected     = iFaceInfo[i * MXFaceInfoEx.SIZE + 35 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].trackId      = iFaceInfo[i * MXFaceInfoEx.SIZE + 36 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].idmax        = iFaceInfo[i * MXFaceInfoEx.SIZE + 37 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].reCog        = iFaceInfo[i * MXFaceInfoEx.SIZE + 38 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].reCogId      = iFaceInfo[i * MXFaceInfoEx.SIZE + 39 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].reCogScore   = iFaceInfo[i * MXFaceInfoEx.SIZE + 40 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+            pMXFaceInfoEx[i].stranger     = iFaceInfo[i * MXFaceInfoEx.SIZE + 41 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM];
+
+        }
+        return 0;
+    }
+
+    public static int MXFaceInfoEx2Int(int iFaceNum, int[] iFaceInfo, MXFaceInfoEx[] pMXFaceInfoEx) {
+        for (int i = 0; i < iFaceNum; i++) {
+            iFaceInfo[i * MXFaceInfoEx.SIZE]     = pMXFaceInfoEx[i].x;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 1] = pMXFaceInfoEx[i].y;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 2] = pMXFaceInfoEx[i].width;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 3] = pMXFaceInfoEx[i].height;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 4] = pMXFaceInfoEx[i].keypt_num;
+            for (int j = 0; j < MAX_KEY_POINT_NUM; j++)
+            {
+                iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + j] = pMXFaceInfoEx[i].keypt_x[j];
+                iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + j + MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].keypt_y[j];
+            }
+
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 5 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM]  = pMXFaceInfoEx[i].quality;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 8 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM]  = pMXFaceInfoEx[i].eyeDistance;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 21 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].expression;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 28 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].mask;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 29 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].liveness;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 30 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].age;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 31 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].gender;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 32 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].pitch;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 33 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].yaw;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 34 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].roll;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 35 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].detected;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 36 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].trackId;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 37 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].idmax;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 38 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].reCog;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 39 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].reCogId;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 40 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].reCogScore;
+            iFaceInfo[i * MXFaceInfoEx.SIZE + 41 + 2 * MXFaceInfoEx.MAX_KEY_POINT_NUM] = pMXFaceInfoEx[i].stranger;
+        }
+        return 0;
+    }
+
     @Override
     public String toString() {
         return "MXFaceInfoEx{" +

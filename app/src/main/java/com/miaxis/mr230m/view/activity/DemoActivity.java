@@ -45,7 +45,7 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
         viewModel.isConnect.observe(this, aBoolean -> {
             String token = mkUtil.getInstance().decodeString("token", "");
             String weiIp = mkUtil.getInstance().decodeString("weiIp","");
-//            viewModel.ActiveInfoAuto(token,weiIp);
+            viewModel.ActiveInfoAuto(token,weiIp);
         });
 
         Intent intent=new Intent(this, TokenService.class);

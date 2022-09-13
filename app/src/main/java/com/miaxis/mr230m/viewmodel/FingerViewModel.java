@@ -3,6 +3,7 @@ package com.miaxis.mr230m.viewmodel;
 import android.graphics.Bitmap;
 
 import com.miaxis.mr230m.event.SingleLiveEvent;
+import com.miaxis.mr230m.model.Result;
 import com.miaxis.mr230m.mr990.bean.Finger;
 import com.miaxis.mr230m.mr990.finger.MR990FingerStrategy;
 import com.mx.finger.common.MxImage;
@@ -14,7 +15,7 @@ import androidx.lifecycle.ViewModel;
 public class FingerViewModel extends ViewModel implements MR990FingerStrategy.ReadFingerCallBack {
 
     MutableLiveData<Boolean> StartCountdown = new MutableLiveData<>(true);
-    public SingleLiveEvent<Integer> match=new SingleLiveEvent<>();
+    public SingleLiveEvent<Result> match=new SingleLiveEvent<>();
     public SingleLiveEvent<Bitmap> bit=new SingleLiveEvent<>();
     private byte[] finger0;
     private byte[] finger1;
@@ -48,6 +49,10 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
 
     @Override
     public void onExtractFeature(MxImage image, byte[] feature) {
+        if (finger0==null||finger1==null){
+            this.match.postValue(new Result("身份证未检测出指纹",false));
+            return;
+        }
         Bitmap bitmap = RawBitmapUtils.raw2Bimap(image.data, image.width, image.height);
         bit.postValue(bitmap);
         if (feature!=null){
@@ -55,7 +60,7 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
             if (match!=0){
                 match= MR990FingerStrategy.getInstance().getMxFingerAlg().match(finger1, feature, 3);
             }
-            this.match.postValue(match);
+            this.match.postValue(new Result("",match==0));
             pause();
         }else {
 

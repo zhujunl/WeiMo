@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,8 +17,13 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.miaxis.mr230m.R;
+import com.miaxis.mr230m.model.Result;
 import com.miaxis.mr230m.mr990.camera.CameraConfig;
 import com.miaxis.mr230m.viewmodel.PreviewViewModel;
+
+import org.zz.bean.IDCardRecord;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +44,15 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
     String TAG="PreviewDialog";
     Camera camera;
     private PreviewViewModel mViewModel;
+    IDCardRecord iDCardRecord;
+    HandlerThread handlerThread;
+    Handler handler;
+    private AtomicInteger advertiseDelay = new AtomicInteger(15);
+
+    public PreviewDialog(IDCardRecord iDCardRecord) {
+        this.iDCardRecord = iDCardRecord;
+        Log.e(TAG, "id==" +this.iDCardRecord );
+    }
 
     @Nullable
     @Override
@@ -44,9 +60,17 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
         Log.e(TAG, "onCreateView" );
         View view = inflater.inflate(R.layout.dialog_fragment_prewview, container, false);
         mViewModel=new ViewModelProvider(getActivity()).get(PreviewViewModel.class);
+        mViewModel.setCardFaceFeature(iDCardRecord.getCardBitmap());
+        mViewModel.PhotoFaceFeatureMutableLiveData.observe(this, photoFaceFeature -> {
+            openCamera();
+        });
         surface=view.findViewById(R.id.surface);
         btnCancel=view.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> dismiss());
+        handlerThread=new HandlerThread("previewHandler");
+        handlerThread.start();
+        handler=new Handler(handlerThread.getLooper());
+        handler.post(previewRunnable);
         return view;
     }
 
@@ -80,7 +104,6 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
     @Override
     public void onResume() {
         super.onResume();
-        openCamera();
         Log.e(TAG, "onResume" );
     }
 
@@ -95,6 +118,7 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
         super.onDestroyView();
         Log.e(TAG, "onDestroyView" );
         mViewModel.stopRgbCameraPreview();
+        handler.removeCallbacks(previewRunnable);
 //        CameraHelper.getInstance().stop();
         mViewModel.destroy();
     }
@@ -123,4 +147,24 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
     public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
 
     }
+
+    private final Runnable previewRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(1000);
+                advertiseDelay.decrementAndGet();
+                if (advertiseDelay.get()>0){
+                    handler.post(previewRunnable);
+                }else {
+                    if (isAdded()||isVisible()){
+                        mViewModel.VerifyResult.postValue(new Result("核验超时",false));
+                        dismiss();
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }

@@ -151,6 +151,23 @@ public class MXFaceIdAPI {
         return infoList.isEmpty() ? MXResult.CreateFail(Code_Illegal_NO_Face, Msg_Illegal_NO_Face) : MXResult.CreateSuccess(infoList);
     }
 
+    public int mxDetectFace(byte[] pImage, int nWidth, int nHeight,
+                            int[] pFaceNum, MXFaceInfoEx[] pFaceInfo) {
+        if (m_bInit!=true){
+            return MXErrorCode.ERR_NO_INIT;
+        }
+        int[] bInfo = new int[MXFaceInfoEx.SIZE * MXFaceInfoEx.iMaxFaceNum];
+        int nRet = this.mJustouchFaceApi.detectFace(pImage, nWidth, nHeight,pFaceNum,bInfo);
+        if(nRet!=0){
+            pFaceNum[0] = 0;
+            return nRet;
+        }
+        MXFaceInfoEx.Int2MXFaceInfoEx(pFaceNum[0],bInfo,pFaceInfo);
+        return 0;
+    }
+
+
+
     public static int Code_Illegal_Face_Init = -200;
     public static String Msg_Illegal_Face_Init = "人脸算法初始化失败";
     public static int Code_Illegal_NO_Face = -201;
@@ -210,6 +227,21 @@ public class MXFaceIdAPI {
             return MXResult.CreateFail(MXErrorCode.ERR_FACE_EXTRACT, "人脸特征提取失败");
         }
         return MXResult.CreateSuccess(feature);
+    }
+
+    public int mxFeatureExtract(byte[] pImage, int nWidth, int nHeight,
+                                int nFaceNum, MXFaceInfoEx[] pFaceInfo, byte[] pFaceFeature)
+    {
+        if (m_bInit!=true){
+            return MXErrorCode.ERR_NO_INIT;
+        }
+        int[] bInfo = new int[MXFaceInfoEx.SIZE * MXFaceInfoEx.iMaxFaceNum];
+        MXFaceInfoEx.MXFaceInfoEx2Int(nFaceNum,bInfo,pFaceInfo);
+        int nRet = mJustouchFaceApi.featureExtract(pImage, nWidth, nHeight,nFaceNum, bInfo,pFaceFeature);
+        if(nRet!=0){
+            return MXErrorCode.ERR_FACE_EXTRACT;
+        }
+        return nRet;
     }
 
     /**
