@@ -81,7 +81,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             binding.finger2.setText("指纹2："+Base64.encodeToString(idCardRecord.getFingerprint1(),Base64.DEFAULT));
             binding.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
             fingerModel.setFinger(idCardRecord.getFingerprint0(),idCardRecord.getFingerprint1());
-            previewModel.setFaceBitmap(idCardRecord.getCardBitmap());
+            previewModel.getCardFaceFeatureByBitmapPosting(idCardRecord.getCardBitmap());
         });
         viewModel.ActiveInfoResult.observe(this, integer -> {
 

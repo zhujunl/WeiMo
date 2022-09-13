@@ -178,4 +178,9 @@ public class MXImageToolsAPI {
         }
         return MXResult.CreateSuccess(new MxImage(width[0], height[0], out));
     }
+
+    public mxImageTool getMxImageTool() {
+        return mMxImageTool;
+    }
+
 }
