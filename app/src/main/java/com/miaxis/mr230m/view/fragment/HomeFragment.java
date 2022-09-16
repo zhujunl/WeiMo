@@ -4,7 +4,8 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.FragmentHomeBinding;
@@ -33,7 +34,9 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
     private IDCardRecord idCardRecord;
     private ProgressDialog mProgressDialog;
     PreviewDialog previewDialog;
-    String TAG="HomeFragment";
+    String TAG = "HomeFragment";
+    TextView result, finger1, finger2, name, time, number;
+    ImageView imageIdcard;
 
     @Override
     protected int initLayout() {
@@ -42,84 +45,97 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
 
     @Override
     protected void initView(@NonNull FragmentHomeBinding binding, @Nullable Bundle savedInstanceState) {
-        mProgressDialog=new ProgressDialog(getActivity());
+        Log.e(TAG, "initView");
+        mProgressDialog = new ProgressDialog(getActivity());
         mProgressDialog.setMessage("请稍后");
         mProgressDialog.setCancelable(false);
-        viewModel=new ViewModelProvider(getActivity()).get(DemoViewModel.class);
-        fingerModel=new ViewModelProvider(this).get(FingerViewModel.class);
-        previewModel=new ViewModelProvider(getActivity()).get(PreviewViewModel.class);
+        viewModel = new ViewModelProvider(getActivity()).get(DemoViewModel.class);
+        fingerModel = new ViewModelProvider(this).get(FingerViewModel.class);
+        previewModel = new ViewModelProvider(getActivity()).get(PreviewViewModel.class);
+        result = binding.getRoot().findViewById(R.id.result);
+        finger1 = binding.getRoot().findViewById(R.id.finger1);
+        finger2 = binding.getRoot().findViewById(R.id.finger2);
+        name = binding.getRoot().findViewById(R.id.nameTxt);
+        time = binding.getRoot().findViewById(R.id.timeTxt);
+        number = binding.getRoot().findViewById(R.id.numTxt);
+        imageIdcard = binding.getRoot().findViewById(R.id.imageIdcard);
         previewModel.VerifyResult.observe(this, result -> {
             previewDialog.dismiss();
-            if (result.isFlag()){
+            if (result.isFlag()) {
                 setEnabled(false);
-                binding.result.setText("人脸核验成功");
-            }else {
-                binding.result.setText(result.getMsg());
+                this.result.setText("人脸核验成功");
+            } else {
+                this.result.setText(result.getMsg());
             }
         });
         fingerModel.match.observe(this, result -> {
-            if (mProgressDialog.isShowing()){
+            if (mProgressDialog.isShowing()) {
                 mProgressDialog.cancel();
             }
-            if (result.isFlag()){
+            if (result.isFlag()) {
                 setEnabled(false);
-                binding.result.setText("操作结果:指纹比对成功");
-            }else {
-                binding.result.setText("操作结果:指纹比对失败"+result.getMsg());
+                this.result.setText("操作结果:指纹比对成功");
+            } else {
+                this.result.setText("操作结果:指纹比对失败" + result.getMsg());
             }
         });
         fingerModel.bit.observe(this, bitmap -> {
-            binding.imageIdcard.setImageBitmap(bitmap);
+            this.imageIdcard.setImageBitmap(bitmap);
         });
         viewModel.resultLiveData.observe(this, result -> {
-            if (mProgressDialog.isShowing()){
+            if (mProgressDialog.isShowing()) {
                 mProgressDialog.cancel();
             }
-            binding.result.setText("操作结果:"+result.getMsg());
+            this.result.setText("操作结果:" + result.getMsg());
         });
         viewModel.IDCardLiveData.observe(this, idCardRecord -> {
-            Log.d(TAG, "IDCardLiveData==" +idCardRecord.toString() );
-            if (mProgressDialog.isShowing()){
+            Log.d(TAG, "IDCardLiveData==" + idCardRecord.toString());
+            if (mProgressDialog.isShowing()) {
                 mProgressDialog.cancel();
             }
-            if(idCardRecord!=null){
-                binding.result.setText("操作结果:读卡成功");
+            if (idCardRecord != null) {
+                result.setText("操作结果:读卡成功");
             }
-            this.idCardRecord=idCardRecord;
-            binding.timeTxt.setVisibility(View.VISIBLE);
+            this.idCardRecord = idCardRecord;
             binding.setCardInfo(idCardRecord);
-            binding.finger1.setText("指纹1："+ Base64.encodeToString(idCardRecord.getFingerprint0(),Base64.DEFAULT));
-            binding.finger2.setText("指纹2："+Base64.encodeToString(idCardRecord.getFingerprint1(),Base64.DEFAULT));
-            binding.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
-            fingerModel.setFinger(idCardRecord.getFingerprint0(),idCardRecord.getFingerprint1());
+            this.name.setText(idCardRecord.getName());
+            this.number.setText(String.valueOf(idCardRecord.getCardNumber()));
+            this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
+            this.finger1.setText("指纹1：" + Base64.encodeToString(idCardRecord.getFingerprint0(), Base64.DEFAULT));
+            this.finger2.setText("指纹2：" + Base64.encodeToString(idCardRecord.getFingerprint1(), Base64.DEFAULT));
+            this.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
+            fingerModel.setFinger(idCardRecord.getFingerprint0(), idCardRecord.getFingerprint1());
             setEnabled(true);
         });
         viewModel.ActiveInfoResult.observe(this, result -> {
             binding.weiTip.setText(result.getMsg());
         });
-        String token = mkUtil.getInstance().decodeString("token", "");
-        String weiIp = mkUtil.getInstance().decodeString("weiIp","");
-        String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
-        binding.HomeSetting.setOnClickListener(v -> nvTo(new SettingFragment()));
+
+        String weiIp = mkUtil.getInstance().decodeString("weiIp", "https://183.129.171.153:8080");
+        String jkmIp = mkUtil.getInstance().decodeString("jkmIp", "");
+        binding.HomeSetting.setOnClickListener(v -> {
+            nvTo(new SettingFragment());
+        });
         binding.btnReadVerify.setOnClickListener(v -> {
             mProgressDialog.show();
             viewModel.UsbReadIDCardMsgVerify();
         });
         binding.btnReadFull.setOnClickListener(v -> {
             mProgressDialog.show();
-            viewModel.UsbReadIDCardMsg(token, weiIp);
+//            String token = mkUtil.getInstance().decodeString("token", "");
+            viewModel.UsbReadIDCardMsg( weiIp);
         });
-        binding.btnHealthVerify.setOnClickListener(v-> {
+        binding.btnHealthVerify.setOnClickListener(v -> {
             mProgressDialog.show();
             viewModel.UsbJkm(jkmIp);
         });
         binding.btnFingerVerify.setOnClickListener(v -> {
-            binding.result.setText("请按压手指");
+            this.result.setText("请按压手指");
             this.fingerModel.readFinger();
         });
         binding.btnFaceVerify.setOnClickListener(v -> {
-            previewDialog=new PreviewDialog(idCardRecord);
-            previewDialog.show(getFragmentManager(),"prewView");
+            previewDialog = new PreviewDialog(idCardRecord);
+            previewDialog.show(getFragmentManager(), "prewView");
         });
     }
 
@@ -142,7 +158,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
         this.fingerModel.stopRead();
     }
 
-    void setEnabled(boolean flag){
+    void setEnabled(boolean flag) {
         binding.btnFaceVerify.setEnabled(flag);
         binding.btnFingerVerify.setEnabled(flag);
     }

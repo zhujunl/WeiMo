@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 
 import com.miaxis.mr230m.App;
 import com.miaxis.mr230m.R;
@@ -43,9 +44,8 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
         viewModel.UsbConnect(this);
         viewModel.getToken();
         viewModel.isConnect.observe(this, aBoolean -> {
-            String token = mkUtil.getInstance().decodeString("token", "");
-            String weiIp = mkUtil.getInstance().decodeString("weiIp","");
-            viewModel.ActiveInfoAuto(token,weiIp);
+            String weiIp = mkUtil.getInstance().decodeString("weiIp","https://183.129.171.153:8080");
+            viewModel.ActiveInfoAuto(weiIp);
         });
 
         Intent intent=new Intent(this, TokenService.class);
@@ -70,5 +70,16 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
         Intent intent=new Intent(this, TokenService.class);
         stopService(intent);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode==KeyEvent.KEYCODE_BACK){
+            if (fragmentManager.getBackStackEntryCount()<2){
+                finish();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

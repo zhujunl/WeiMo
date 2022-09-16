@@ -6,6 +6,7 @@ import com.miaxis.mr230m.event.SingleLiveEvent;
 import com.miaxis.mr230m.model.Result;
 import com.miaxis.mr230m.mr990.bean.Finger;
 import com.miaxis.mr230m.mr990.finger.MR990FingerStrategy;
+import com.miaxis.mr230m.util.ArrayUtils;
 import com.mx.finger.common.MxImage;
 import com.mx.finger.utils.RawBitmapUtils;
 
@@ -43,14 +44,14 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
 
     @Override
     public void onReadFinger(MxImage finger) {
-
         this.StartCountdown.postValue(true);
     }
 
     @Override
     public void onExtractFeature(MxImage image, byte[] feature) {
-        if (finger0==null||finger1==null){
+        if (ArrayUtils.isNullOrEmpty(finger0)||ArrayUtils.isNullOrEmpty(finger1)){
             this.match.postValue(new Result("身份证未检测出指纹",false));
+            stopRead();
             return;
         }
         Bitmap bitmap = RawBitmapUtils.raw2Bimap(image.data, image.width, image.height);
@@ -61,7 +62,7 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
                 match= MR990FingerStrategy.getInstance().getMxFingerAlg().match(finger1, feature, 3);
             }
             this.match.postValue(new Result("",match==0));
-            pause();
+            stopRead();
         }else {
 
         }

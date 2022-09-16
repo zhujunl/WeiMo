@@ -8,6 +8,7 @@ import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.FragmentSettingBinding;
 import com.miaxis.mr230m.util.mkUtil;
 import com.miaxis.mr230m.viewmodel.DemoViewModel;
+import com.zzreader.zzStringTrans;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,11 +44,11 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
                 mProgressDialog.cancel();
             }
         });
-        String weiIp = mkUtil.getInstance().decodeString("weiIp","");
+        String weiIp = mkUtil.getInstance().decodeString("weiIp","https://183.129.171.153:8080");
         String jkmIp = mkUtil.getInstance().decodeString("jkmIp","");
-        String token = mkUtil.getInstance().decodeString("token", "");
+//        String token = mkUtil.getInstance().decodeString("token", "");
         mode=mkUtil.getInstance().decodeBool("jkm",false);
-        binding.back.setOnClickListener(v -> finish());
+        binding.back.setOnClickListener(v -> {finish();});
         binding.save.setOnClickListener(v -> {
             mkUtil.getInstance().encode("weiIp",binding.WeiIp.getText().toString().trim());
             mkUtil.getInstance().encode("jkmIp",binding.JkmIp.getText().toString().trim());
@@ -62,7 +63,7 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode){
                 viewModel.ActiveInfo(jkmIp);
             }else {
-                viewModel.ActiveInfo(token, weiIp);
+                viewModel.ActiveInfo(weiIp);
             }
         });
         binding.btnDeactiveinfo.setOnClickListener(v -> {
@@ -70,7 +71,7 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode) {
                 viewModel.ActRel(jkmIp);
             }else {
-                viewModel.ActRel(token, weiIp);
+                viewModel.ActRel(weiIp);
             }
         });
         binding.btnOnlineauthinfo.setOnClickListener(v -> {
@@ -78,11 +79,13 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode) {
                 viewModel.OnlineAuth(jkmIp);
             }else {
-                viewModel.OnlineAuth(token, weiIp);
+                viewModel.OnlineAuth(weiIp);
             }
         });
         binding.btnActiveState.setOnClickListener(v -> viewModel.ActiveState());
-        binding.btnCertificate.setOnClickListener(v -> viewModel.getSign());
+        binding.btnCertificate.setOnClickListener(v -> {
+            binding.result.setText("证书："+ zzStringTrans.hex2str(viewModel.jdkBase64Decode(viewModel.getSign().getBytes())));
+        });
         binding.jkmSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mode=isChecked);
     }
 }

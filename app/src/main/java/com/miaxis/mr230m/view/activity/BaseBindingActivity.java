@@ -2,6 +2,7 @@ package com.miaxis.mr230m.view.activity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -24,15 +25,16 @@ public abstract class BaseBindingActivity<V extends ViewDataBinding> extends App
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if(isScreenChange()) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        } else {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//        }
+        if(isScreenChange()) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
-//        initWindow();
+        initWindow();
         //ARouter.getInstance().inject(this);
         binding = DataBindingUtil.setContentView(this, initLayout());
+        binding.setLifecycleOwner(this);
         initView(binding, savedInstanceState);
         initData(binding, savedInstanceState);
     }

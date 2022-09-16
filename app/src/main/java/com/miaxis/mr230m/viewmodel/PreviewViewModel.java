@@ -85,6 +85,7 @@ public class PreviewViewModel extends ViewModel{
                                 }
                                 MXResult<Float> result = MXFaceIdAPI.getInstance().mxFeatureMatch(featureExtract.getData(),PhotoFaceFeatureMutableLiveData.getValue().getFaceFeature());
                                 if (result.getData()>0.7F){
+                                    Log.d(TAG, "核验成功==" +result.getData() );
                                     VerifyResult.postValue(new Result(String.valueOf(result.getData()),true));
                                 }
                             }

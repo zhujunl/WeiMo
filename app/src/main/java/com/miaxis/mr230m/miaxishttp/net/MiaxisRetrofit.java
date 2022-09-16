@@ -1,5 +1,7 @@
 package com.miaxis.mr230m.miaxishttp.net;
 
+import com.miaxis.mr230m.util.mkUtil;
+
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -30,7 +32,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 public class MiaxisRetrofit {
    private static final String TAG = "MiaxisRetrofit";
 
-   public static WeiAPi getApiService(String token,String path) {
+    public static WeiAPi getApiService(String path) {
+       String token = mkUtil.getInstance().decodeString("token", "");
       Retrofit retrofit = new Retrofit.Builder()
               //设置OKHttpClient,如果不设置会提供一个默认的
               .client(genericClient(token))

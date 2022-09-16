@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.miaxis.mr230m.http.net.MyCallback;
@@ -36,10 +37,8 @@ public class TokenService extends Service {
         Intent intent = new Intent();
         intent.setAction(TEST_ACTION);
         pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        int tokenTime = mkUtil.getInstance().decodeInt("tokenTime", 0);
-        Log.e(TAG, "tokenTime===" + tokenTime);
+        int tokenTime = 1;
         TIME_INTERVAL= tokenTime*60*1000;
-        Log.e(TAG, "TIME_INTERVAL===" + TIME_INTERVAL);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//6.0低电量模式需要使用该方法触发定时任务
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), pendingIntent);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {//4.4以上 需要使用该方法精确执行时间
@@ -82,10 +81,12 @@ public class TokenService extends Service {
     };
 
     private void refresh(){
-        Log.e(TAG, "refresh");
-        String token = mkUtil.getInstance().decodeString("token", "");
+//        String token = mkUtil.getInstance().decodeString("token", "");
         String ip= mkUtil.getInstance().decodeString("weiIp", "");
-        MiaxisRetrofit.getApiService(token,ip).RefreshToken().enqueue(new MyCallback<TokenRefreshResonse>() {
+        if (TextUtils.isEmpty(ip)){
+            return;
+        }
+        MiaxisRetrofit.getApiService(ip).RefreshToken().enqueue(new MyCallback<TokenRefreshResonse>() {
             @Override
             public void onSuccess(TokenRefreshResonse tokenRefreshResonse) {
                 if (tokenRefreshResonse.getCode()==200){
