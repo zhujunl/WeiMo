@@ -1,7 +1,6 @@
 package com.miaxis.mr230m.view.activity;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,7 +9,7 @@ import android.view.KeyEvent;
 import com.miaxis.mr230m.App;
 import com.miaxis.mr230m.R;
 import com.miaxis.mr230m.databinding.ActivityMian2Binding;
-import com.miaxis.mr230m.service.TokenService;
+import com.miaxis.mr230m.service.ServerManager;
 import com.miaxis.mr230m.util.mkUtil;
 import com.miaxis.mr230m.view.fragment.HomeFragment;
 import com.miaxis.mr230m.viewmodel.DemoViewModel;
@@ -47,9 +46,7 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
             String weiIp = mkUtil.getInstance().decodeString("weiIp","https://183.129.171.153:8080");
             viewModel.ActiveInfoAuto(weiIp);
         });
-
-        Intent intent=new Intent(this, TokenService.class);
-        startService(intent);
+        ServerManager.getInstance().startRefresh();
     }
 
     @Override
@@ -67,8 +64,7 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
 
     @Override
     public void onDestroy() {
-        Intent intent=new Intent(this, TokenService.class);
-        stopService(intent);
+        ServerManager.getInstance().stopRefresh();
         super.onDestroy();
     }
 

@@ -30,14 +30,14 @@ public class TokenService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "开启" );
+        Log.d(TAG, "开启" );
         IntentFilter intentFilter = new IntentFilter(TEST_ACTION);
         registerReceiver(receiver, intentFilter);
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent();
         intent.setAction(TEST_ACTION);
         pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        int tokenTime = 1;
+        int tokenTime = 8;
         TIME_INTERVAL= tokenTime*60*1000;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//6.0低电量模式需要使用该方法触发定时任务
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), pendingIntent);
@@ -68,7 +68,7 @@ public class TokenService extends Service {
             String action = intent.getAction();
             if (TEST_ACTION.equals(action)) {
                 if (TIME_INTERVAL>0){
-                    Log.e(TAG, "刷新" );
+                    Log.d(TAG, "刷新" );
                     refresh();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + TIME_INTERVAL, pendingIntent);
@@ -90,7 +90,7 @@ public class TokenService extends Service {
             @Override
             public void onSuccess(TokenRefreshResonse tokenRefreshResonse) {
                 if (tokenRefreshResonse.getCode()==200){
-                    Log.e(TAG, "refresh成功:");
+                    Log.d(TAG, "refresh成功:");
                 }else {
                     Log.e(TAG, "refresh失败:"+tokenRefreshResonse.getMsg());
                 }
