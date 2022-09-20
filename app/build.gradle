@@ -51,6 +51,8 @@ dependencies {
     implementation project(path: ':mr230Hidcard')
     implementation project(path: ':serialport')
     implementation files('libs\\MxMscFingerApi.jar')
+    implementation project(path: ':weomosdk')
+    implementation project(path: ':easysocket')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

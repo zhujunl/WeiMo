@@ -10,3 +10,5 @@ rootProject.name = "MR230m"
 include ':app'
 include ':mr230Hidcard'
 include ':serialport'
+include ':weomosdk'
+include ':easysocket'

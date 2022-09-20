@@ -129,7 +129,8 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
             clickTime=System.currentTimeMillis();
-            viewModel.UsbReadIDCardMsg( weiIp);
+//            viewModel.UsbReadIDCardMsg( weiIp);
+            viewModel.UsbReadIDCardMsgTCP();
         });
         binding.btnHealthVerify.setOnClickListener(v -> {
             mProgressDialog.show();

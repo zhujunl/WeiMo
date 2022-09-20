@@ -12,8 +12,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/easysocket" />
             <option value="$PROJECT_DIR$/mr230Hidcard" />
             <option value="$PROJECT_DIR$/serialport" />
+            <option value="$PROJECT_DIR$/weomosdk" />
           </set>
         </option>
       </GradleProjectSettings>

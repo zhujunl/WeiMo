@@ -2,11 +2,15 @@ package com.miaxis.mr230m.viewmodel;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.serialport.MXDataCode;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
+import com.easysocket.EasySocket;
+import com.easysocket.callback.SimpleCallBack;
+import com.easysocket.entity.OriginReadData;
 import com.miaxis.mr230m.App;
 import com.miaxis.mr230m.event.SingleLiveEvent;
 import com.miaxis.mr230m.http.bean.BusInfo;
@@ -27,6 +31,20 @@ import com.miaxis.mr230m.miaxishttp.bean.WResponseOnlineauthInfo;
 import com.miaxis.mr230m.miaxishttp.net.MiaxisRetrofit;
 import com.miaxis.mr230m.model.Result;
 import com.miaxis.mr230m.util.mkUtil;
+import com.miaxis.weomosdk.command.PostCommandParse;
+import com.miaxis.weomosdk.constant.Constant;
+import com.miaxis.weomosdk.data.ActionMessage;
+import com.miaxis.weomosdk.data.ChannelMessage;
+import com.miaxis.weomosdk.entity.RequestActiveBean;
+import com.miaxis.weomosdk.entity.RequestAuthBean;
+import com.miaxis.weomosdk.entity.RequestPersonInfoBean;
+import com.miaxis.weomosdk.entity.RequestRemoveBean;
+import com.miaxis.weomosdk.entity.ResponseActiveBean;
+import com.miaxis.weomosdk.entity.ResponseAuthBean;
+import com.miaxis.weomosdk.entity.ResponsePersonInfoBean;
+import com.miaxis.weomosdk.entity.ResponseRemoveBean;
+import com.miaxis.weomosdk.utils.DESUtils;
+import com.miaxis.weomosdk.utils.GsonUtils;
 import com.zzreader.ConStant;
 import com.zzreader.ZzReader;
 import com.zzreader.zzStringTrans;
@@ -34,8 +52,7 @@ import com.zzreader.zzStringTrans;
 import org.zz.bean.IDCardRecord;
 import org.zz.bean.IdCardParser;
 
-import java.util.Date;
-
+import androidx.annotation.RequiresApi;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import retrofit2.Response;
@@ -194,7 +211,6 @@ public class DemoViewModel extends ViewModel {
                 WRequestIdInfo wRequestIdInfo = new WRequestIdInfo(cid, mdeviceid, samid, encodeBusiness(cid, samid, "idinfo"), framedata, samsigncert);
                 Response<WResponseIdInfo> execute = MiaxisRetrofit.getApiService( ip).IdInfo(wRequestIdInfo).execute();
                 WResponseIdInfo body = execute.body();
-                Date date = execute.headers().getDate("Date");
                 long time = System.currentTimeMillis()-s;
                 if (body.getCode() == 200) {
                     String idtype = IdCardParser.unicode2String(jdkBase64Decode(body.getData().getIdtype().getBytes()));
@@ -612,6 +628,388 @@ public class DemoViewModel extends ViewModel {
 //                } else {
 //
 //                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ActiveInfoResult.postValue(new Result("微模自动授权失败," + e.getMessage(), false,0L,System.currentTimeMillis()));
+            }
+        });
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * TCP协议************
+     * */
+
+    public void ActiveInfoTCP() {
+        App.getInstance().threadExecutor.execute(() -> {
+            try {
+                long l = System.currentTimeMillis();
+                String samid = UsbGetSAMID();
+                if (samid == null) {
+                    ShowMessage("解除激活失败,没有SAMID", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                RequestActiveBean bean=new RequestActiveBean();
+                bean.setCid(cid);
+                bean.setSamid(samid);
+                ActionMessage<RequestActiveBean> actionMessage = new ActionMessage<>(bean);
+                actionMessage.setActionId("101001");
+                actionMessage.setDomainId("101000");
+
+                ChannelMessage<ActionMessage<RequestActiveBean>> channelMessage = new ChannelMessage<>();
+                channelMessage.setCmd("UPLOAD_DATA");
+                channelMessage.setClientId(Constant.CLIENT_ID);
+                channelMessage.setData(actionMessage);
+                long l2 = System.currentTimeMillis();
+                EasySocket.getInstance().upCallbackMessage(channelMessage)
+                        .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                            @Override
+                            public void onResponse(OriginReadData data) {
+                                Log.d(TAG, "get data " + data.getBodyString());
+                                PostCommandParse commandParse = new PostCommandParse();
+                                commandParse.parse(data.getBodyString());
+                                if (commandParse.getValue() == 0) {
+                                    long l3 = System.currentTimeMillis();
+                                    ResponseActiveBean responseActiveBean= GsonUtils.GsonToBean(commandParse.getData(),ResponseActiveBean.class);
+                                    Constant.DEVICE_ID=responseActiveBean.getMdeviceid();
+                                    Log.d(TAG,"active info "+responseActiveBean.getActiveinfo()+" mdeviceId "+responseActiveBean.getMdeviceid());
+                                    mkUtil.getInstance().encode("mdeviceid", responseActiveBean.getMdeviceid());
+                                    String activeinfo = responseActiveBean.getActiveinfo();
+                                    byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
+                                    byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                                    if ((int) bytes1[9] == -112) {
+                                        ShowMessage("激活成功", false,l2-l,l+l3-l2);
+                                    } else {
+                                        ShowMessage("激活失败" + (int) bytes1[9], false,l2-l,l3-l2);
+                                    }
+
+                                }else {
+//                                    ShowMessage("激活失败,错误码：" + body.getCode() + "错误信息:" + body.getMsg(), false,0L,System.currentTimeMillis());
+                                }
+//                                callback.response(new ZZResponse(commandParse.getValue(),commandParse.getData()));
+                            }
+                        });
+
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ShowMessage("激活失败" + e.getMessage(), false,0L,System.currentTimeMillis());
+            }
+        });
+    }
+
+
+    public void ActRelTCP() {
+        App.getInstance().threadExecutor.execute(() -> {
+            try {
+                long l = System.currentTimeMillis();
+                String samid = UsbGetSAMID();
+                if (samid == null) {
+                    ShowMessage("解除激活失败,没有SAMID", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                String mdeviceid = mkUtil.getInstance().decodeString("mdeviceid", null);
+                if (mdeviceid == null) {
+                    ShowMessage("解除激活失败,未激活", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                RequestRemoveBean bean=new RequestRemoveBean();
+                bean.setCid(cid);
+                bean.setSamid(samid);
+                bean.setMdeviceid(mdeviceid);
+                ActionMessage<RequestRemoveBean> actionMessage = new ActionMessage<>(bean);
+                actionMessage.setActionId("101002");
+                actionMessage.setDomainId("101000");
+
+                ChannelMessage<ActionMessage<RequestRemoveBean>> channelMessage = new ChannelMessage<>();
+                channelMessage.setCmd("UPLOAD_DATA");
+                channelMessage.setClientId(Constant.CLIENT_ID);
+                channelMessage.setData(actionMessage);
+
+                EasySocket.getInstance().upCallbackMessage(channelMessage)
+                        .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                            @Override
+                            public void onResponse(OriginReadData data) {
+                                long l2 = System.currentTimeMillis();
+                                Log.d(TAG, "get data " + data.getBodyString());
+                                PostCommandParse commandParse = new PostCommandParse();
+                                commandParse.parse(data.getBodyString());
+                                if (commandParse.getValue() == 0) {
+                                    ResponseRemoveBean responseActiveBean=GsonUtils.GsonToBean(commandParse.getData(),ResponseRemoveBean.class);
+                                    String deactiveinfo = responseActiveBean.getDeactiveinfo();
+                                    Log.d(TAG," deactiveinfo: "+deactiveinfo);
+                                    byte[] bytes = jdkBase64Decode(deactiveinfo.getBytes());
+                                    byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE), bytes);
+                                    long l3 = System.currentTimeMillis();
+                                    if ((int) bytes1[9] == -112) {
+                                        ShowMessage("解除激活成功", false,l2-l,l3-l2);
+                                    } else {
+                                        ShowMessage("解除激活失败" + (int) bytes1[9], false,l2-l,l3-l);
+                                    }
+
+                                }
+//                                callback.response(new ZZResponse(commandParse.getValue(),commandParse.getData()));
+                            }
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+                ShowMessage("解除激活失败" + e.getMessage(), false,0L,System.currentTimeMillis());
+            }
+        });
+    }
+
+    public void OnlineAuthTCP() {
+        App.getInstance().threadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long l=System.currentTimeMillis();
+                    String samid = UsbGetSAMID();
+                    if (samid == null) {
+                        ShowMessage("解除激活失败,没有SAMID", false,0L,System.currentTimeMillis());
+                        return;
+                    }
+                    String mdeviceid = mkUtil.getInstance().decodeString("mdeviceid", null);
+                    if (mdeviceid == null) {
+                        ShowMessage("解除激活失败,未激活", false,0L,System.currentTimeMillis());
+                        return;
+                    }
+                    String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                    byte[] cmd = MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                    byte[] bytes = idCardDriver.samCommandZ(cmd);
+                    String author = AnalysisTran(bytes).trim().replace("\n", "");
+                    RequestAuthBean bean=new RequestAuthBean();
+                    bean.setCid(cid);
+                    bean.setSamid(samid);
+                    bean.setMdeviceid(mdeviceid);
+                    bean.setAuthreq(author);
+                    ActionMessage<RequestAuthBean> actionMessage = new ActionMessage<>(bean);
+                    actionMessage.setActionId("101003");
+                    actionMessage.setDomainId("101000");
+
+                    ChannelMessage<ActionMessage<RequestAuthBean>> channelMessage = new ChannelMessage<>();
+                    channelMessage.setCmd("UPLOAD_DATA");
+                    channelMessage.setClientId(Constant.CLIENT_ID);
+                    channelMessage.setData(actionMessage);
+
+                    EasySocket.getInstance().upCallbackMessage(channelMessage)
+                            .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                                @Override
+                                public void onResponse(OriginReadData data) {
+                                    long l2=System.currentTimeMillis();
+                                    Log.d(TAG, "get data " + data.getBodyString());
+                                    PostCommandParse commandParse = new PostCommandParse();
+                                    commandParse.parse(data.getBodyString());
+                                    if (commandParse.getValue() == 0) {
+                                        ResponseAuthBean responseAuthBean=GsonUtils.GsonToBean(commandParse.getData(),ResponseAuthBean.class);
+                                        String authresp = responseAuthBean.getAuthresp();
+                                        Log.d(TAG,"auth info "+authresp);
+                                        byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
+                                        byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                                        byte[] realBytes = idCardDriver.samCommandZ(aut, authresp_base);
+                                        long l3=System.currentTimeMillis();
+                                        ShowMessage("授权结果：" + (realBytes[9] == -112 ? "成功" : "失败"), false,l2-l,l+l3-l2);
+
+                                    }
+//                                    callback.response(new ZZResponse(commandParse.getValue(),""));
+                                }
+                            });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ShowMessage(e.getMessage() + "   错误码： " + ConStant.ERRORCODE_CMD, false,0L,System.currentTimeMillis());
+                }
+            }
+        });
+    }
+
+    public void UsbReadIDCardMsgTCP( ) {
+        App.getInstance().threadExecutor.execute(() -> {
+            try {
+                String samid = UsbGetSAMID();
+                if (samid == null) {
+                    ShowMessage("解除激活失败,没有SAMID", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                String mdeviceid = mkUtil.getInstance().decodeString("mdeviceid", null);
+                if (mdeviceid == null) {
+                    ShowMessage("解除激活失败,未激活", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                byte[] photo = new byte[1024];
+                byte[] fpimg = new byte[1024];
+                byte[] start = new byte[16];
+                byte[] end = new byte[16];
+                byte[] jkm = idCardDriver.readIDCardMsgZ(photo, fpimg);
+                if (jkm == null) {
+                    ShowMessage("读卡失败，请重新读取", false,0L,System.currentTimeMillis());
+                    return;
+                }
+                Bitmap faceBit = IdCardParser.getBitmap(photo);
+                IDCardRecord idCardRecord = new IDCardRecord();
+                System.arraycopy(jkm, 38, start, 0, start.length);
+                System.arraycopy(jkm, 54, end, 0, end.length);
+                idCardRecord.setValidateStart(IdCardParser.unicode2String(start));
+                idCardRecord.setValidateEnd(IdCardParser.unicode2String(end));
+                idCardRecord.setCardBitmap(faceBit);
+                byte[] bFingerData0 = new byte[FINGER_DATA_SIZE];
+                byte[] bFingerData1 = new byte[FINGER_DATA_SIZE];
+                System.arraycopy(fpimg, 0, bFingerData0, 0, bFingerData0.length);
+                System.arraycopy(fpimg, 512, bFingerData1, 0, bFingerData1.length);
+                idCardRecord.setFingerprintPosition0(fingerPositionCovert(bFingerData0[5]));
+                idCardRecord.setFingerprint0(bFingerData0);
+                idCardRecord.setFingerprintPosition1(fingerPositionCovert(bFingerData1[5]));
+                idCardRecord.setFingerprint1(bFingerData1);
+
+
+                String framedata = jdkBase64Encode(jkm);
+                String samsigncert = getSign();
+                long s=System.currentTimeMillis();
+                RequestPersonInfoBean bean=new RequestPersonInfoBean();
+                bean.setCid(cid);
+                bean.setSamid(samid);
+                bean.setMdeviceid(mdeviceid);
+                bean.setFramedata(framedata);
+                bean.setSamsigncert(samsigncert);
+
+                ActionMessage<RequestPersonInfoBean> actionMessage = new ActionMessage<>(bean);
+                actionMessage.setActionId("101004");
+                actionMessage.setDomainId("101000");
+
+                ChannelMessage<ActionMessage<RequestPersonInfoBean>> channelMessage = new ChannelMessage<>();
+                channelMessage.setCmd("UPLOAD_DATA");
+                channelMessage.setClientId(Constant.CLIENT_ID);
+                channelMessage.setData(actionMessage);
+
+                EasySocket.getInstance().upCallbackMessage(channelMessage)
+                        .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                            @RequiresApi(api = Build.VERSION_CODES.O)
+                            @Override
+                            public void onResponse(OriginReadData data) {
+                                Log.d(TAG, "get data " + data.getBodyString());
+                                PostCommandParse commandParse = new PostCommandParse();
+                                commandParse.parse(data.getBodyString());
+                                if (commandParse.getValue() == 0) {
+                                    long time = System.currentTimeMillis()-s;
+                                    ResponsePersonInfoBean responsePersonInfoBean=GsonUtils.GsonToBean(commandParse.getData(),ResponsePersonInfoBean.class);
+                                    Log.d(TAG,"responsePersonInfoBean=="+responsePersonInfoBean);
+                                    String decrypt = DESUtils.decrypt("12345678", responsePersonInfoBean.getChinesename());
+                                    String idtype = IdCardParser.unicode2String(jdkBase64Decode(DESUtils.decrypt("12345678",responsePersonInfoBean.getIdtype()).getBytes()));
+                                    String name = IdCardParser.unicode2String(jdkBase64Decode(idtype.equals("I") ? DESUtils.decrypt("12345678",responsePersonInfoBean.getEnglishname()).getBytes()
+                                            : DESUtils.decrypt("12345678",responsePersonInfoBean.getChinesename()).getBytes()));
+                                    ;
+                                    String idnumber = IdCardParser.unicode2String(jdkBase64Decode(DESUtils.decrypt("12345678",responsePersonInfoBean.getIdnumber()).getBytes()));
+                                    idCardRecord.setName(name);
+                                    idCardRecord.setCardNumber(idnumber);
+                                    IDCardLiveData.postValue(idCardRecord);
+                                    ShowMessage("读卡请求成功", false,time,s);
+                                }
+//                                callback.response(new ZZResponse(commandParse.getValue(),""));
+                            }
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+                ShowMessage("读卡失败," + e.getMessage(), false,0L,System.currentTimeMillis());
+            }
+        });
+    }
+
+    public void ActiveInfoAutoTCP() {
+        App.getInstance().threadExecutor.execute(() -> {
+            try {
+                byte[] CMD_CHECK = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));
+                if (CMD_CHECK == null) {
+                    Log.e(TAG, "ActiveInfoAuto检查激活状态失败");
+                    ActiveInfoResult.postValue(new Result("微模查激活状态失败", false,0L,System.currentTimeMillis()));
+                    return;
+                }
+                String samid = UsbGetSAMID();
+                String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                RequestActiveBean bean=new RequestActiveBean();
+                bean.setCid(cid);
+                bean.setSamid(samid);
+                ActionMessage<RequestActiveBean> actionMessage = new ActionMessage<>(bean);
+                actionMessage.setActionId("101001");
+                actionMessage.setDomainId("101000");
+
+                ChannelMessage<ActionMessage<RequestActiveBean>> channelMessage = new ChannelMessage<>();
+                channelMessage.setCmd("UPLOAD_DATA");
+                channelMessage.setClientId(Constant.CLIENT_ID);
+                channelMessage.setData(actionMessage);
+                EasySocket.getInstance().upCallbackMessage(channelMessage)
+                        .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                            @Override
+                            public void onResponse(OriginReadData data) {
+                                Log.d(TAG, "get data " + data.getBodyString());
+                                PostCommandParse commandParse = new PostCommandParse();
+                                commandParse.parse(data.getBodyString());
+                                if (commandParse.getValue() == 0) {
+                                    ResponseActiveBean responseActiveBean= GsonUtils.GsonToBean(commandParse.getData(),ResponseActiveBean.class);
+                                    String mdeviceid=responseActiveBean.getMdeviceid();
+                                    Log.d(TAG,"active info "+responseActiveBean.getActiveinfo()+" mdeviceId "+responseActiveBean.getMdeviceid());
+                                    mkUtil.getInstance().encode("mdeviceid", responseActiveBean.getMdeviceid());
+                                    String activeinfo = responseActiveBean.getActiveinfo();
+                                    byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
+                                    byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                                    if ((int) bytes1[9] == -112) {
+                                        byte[] cmd = MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                                        byte[] cmdAuth = idCardDriver.samCommandZ(cmd);
+                                        String author = AnalysisTran(cmdAuth).trim().replace("\n", "");
+                                        RequestAuthBean bean=new RequestAuthBean();
+                                        bean.setCid(cid);
+                                        bean.setSamid(samid);
+                                        bean.setMdeviceid(mdeviceid);
+                                        bean.setAuthreq(author);
+                                        ActionMessage<RequestAuthBean> actionMessage = new ActionMessage<>(bean);
+                                        actionMessage.setActionId("101003");
+                                        actionMessage.setDomainId("101000");
+
+                                        ChannelMessage<ActionMessage<RequestAuthBean>> channelMessage = new ChannelMessage<>();
+                                        channelMessage.setCmd("UPLOAD_DATA");
+                                        channelMessage.setClientId(Constant.CLIENT_ID);
+                                        channelMessage.setData(actionMessage);
+
+                                        EasySocket.getInstance().upCallbackMessage(channelMessage)
+                                                .onCallBack(new SimpleCallBack(channelMessage.getCallbackId()) {
+                                                    @Override
+                                                    public void onResponse(OriginReadData data) {
+                                                        long l2=System.currentTimeMillis();
+                                                        Log.d(TAG, "get data " + data.getBodyString());
+                                                        PostCommandParse commandParse = new PostCommandParse();
+                                                        commandParse.parse(data.getBodyString());
+                                                        if (commandParse.getValue() == 0) {
+                                                            ResponseAuthBean responseAuthBean=GsonUtils.GsonToBean(commandParse.getData(),ResponseAuthBean.class);
+                                                            String authresp = responseAuthBean.getAuthresp();
+                                                            Log.d(TAG,"auth info "+authresp);
+                                                            byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
+                                                            byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                                                            byte[] realBytes = idCardDriver.samCommandZ(aut, authresp_base);
+                                                            ActiveInfoResult.postValue(new Result(realBytes[9] == -112 ? "微模自动授权成功" : "微模自动授权失败" + String.valueOf((int) realBytes[9]),
+                                                                    false,0L,System.currentTimeMillis()));
+                                                        }
+                                                        //                                    callback.response(new ZZResponse(commandParse.getValue(),""));
+                                                    }
+                                                });
+                                    }
+                                }else {
+                                    //                                    ShowMessage("激活失败,错误码：" + body.getCode() + "错误信息:" + body.getMsg(), false,0L,System.currentTimeMillis());
+                                }
+                                //                                callback.response(new ZZResponse(commandParse.getValue(),commandParse.getData()));
+                            }
+                        });
+
             } catch (Exception e) {
                 e.printStackTrace();
                 ActiveInfoResult.postValue(new Result("微模自动授权失败," + e.getMessage(), false,0L,System.currentTimeMillis()));

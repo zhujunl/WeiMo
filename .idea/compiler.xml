@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="1.7">
+      <module name="MR230m.app" target="11" />
+      <module name="MR230m.mr230Hidcard" target="11" />
+      <module name="MR230m.serialport" target="11" />
+      <module name="MR230m.weomosdk" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>
