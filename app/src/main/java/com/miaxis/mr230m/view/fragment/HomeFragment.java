@@ -37,6 +37,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
     String TAG = "HomeFragment";
     TextView result, finger1, finger2, name, time, number;
     ImageView imageIdcard;
+    long clickTime= 0L;
 
     @Override
     protected int initLayout() {
@@ -86,7 +87,8 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             if (mProgressDialog.isShowing()) {
                 mProgressDialog.cancel();
             }
-            this.result.setText("操作结果:" + result.getMsg());
+            long timeDiff=result.getDeviceTime()-clickTime;
+            this.result.setText("操作结果:" + result.getMsg()+(clickTime==0F?"":"\n读卡耗时："+timeDiff+"毫秒")+(result.getNetTime()==0F?"":"\n联网耗时："+result.getNetTime()+"毫秒"));
         });
         viewModel.IDCardLiveData.observe(this, idCardRecord -> {
             Log.d(TAG, "IDCardLiveData==" + idCardRecord.toString());
@@ -114,19 +116,25 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
         String weiIp = mkUtil.getInstance().decodeString("weiIp", "https://183.129.171.153:8080");
         String jkmIp = mkUtil.getInstance().decodeString("jkmIp", "");
         binding.HomeSetting.setOnClickListener(v -> {
+            this.fingerModel.stopRead();
             nvTo(new SettingFragment());
         });
         binding.btnReadVerify.setOnClickListener(v -> {
             mProgressDialog.show();
+            this.fingerModel.stopRead();
+            clickTime=System.currentTimeMillis();
             viewModel.UsbReadIDCardMsgVerify();
         });
         binding.btnReadFull.setOnClickListener(v -> {
             mProgressDialog.show();
-//            String token = mkUtil.getInstance().decodeString("token", "");
+            this.fingerModel.stopRead();
+            clickTime=System.currentTimeMillis();
             viewModel.UsbReadIDCardMsg( weiIp);
         });
         binding.btnHealthVerify.setOnClickListener(v -> {
             mProgressDialog.show();
+            this.fingerModel.stopRead();
+            clickTime=System.currentTimeMillis();
             viewModel.UsbJkm(jkmIp);
         });
         binding.btnFingerVerify.setOnClickListener(v -> {
@@ -134,6 +142,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             this.fingerModel.readFinger();
         });
         binding.btnFaceVerify.setOnClickListener(v -> {
+            this.fingerModel.stopRead();
             previewDialog = new PreviewDialog(idCardRecord);
             previewDialog.show(getFragmentManager(), "prewView");
         });

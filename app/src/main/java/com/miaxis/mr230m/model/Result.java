@@ -10,10 +10,14 @@ package com.miaxis.mr230m.model;
 public class Result {
    private String msg;
    private boolean flag;
+   private long netTime;
+   private long deviceTime;
 
-   public Result(String msg, boolean flag) {
+   public Result(String msg, boolean flag, long netTime, long deviceTime) {
       this.msg = msg;
       this.flag = flag;
+      this.netTime = netTime;
+      this.deviceTime = deviceTime;
    }
 
    public String getMsg() {
@@ -32,11 +36,29 @@ public class Result {
       this.flag = flag;
    }
 
+   public long getNetTime() {
+      return netTime;
+   }
+
+   public void setNetTime(long netTime) {
+      this.netTime = netTime;
+   }
+
+   public long getDeviceTime() {
+      return deviceTime;
+   }
+
+   public void setDeviceTime(long deviceTime) {
+      this.deviceTime = deviceTime;
+   }
+
    @Override
    public String toString() {
       return "Result{" +
               "msg='" + msg + '\'' +
               ", flag=" + flag +
+              ", netTime=" + netTime +
+              ", deviceTime=" + deviceTime +
               '}';
    }
 }

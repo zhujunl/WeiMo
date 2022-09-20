@@ -158,7 +158,7 @@ public class PreviewDialog extends DialogFragment implements TextureView.Surface
                     handler.post(previewRunnable);
                 }else {
                     if (isAdded()||isVisible()){
-                        mViewModel.VerifyResult.postValue(new Result("核验超时",false));
+                        mViewModel.VerifyResult.postValue(new Result("核验超时",false,0L,0L));
                         dismiss();
                     }
                 }

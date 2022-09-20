@@ -50,7 +50,7 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
     @Override
     public void onExtractFeature(MxImage image, byte[] feature) {
         if (ArrayUtils.isNullOrEmpty(finger0)||ArrayUtils.isNullOrEmpty(finger1)){
-            this.match.postValue(new Result("身份证未检测出指纹",false));
+            this.match.postValue(new Result("身份证未检测出指纹",false,0L,0L));
             stopRead();
             return;
         }
@@ -61,7 +61,7 @@ public class FingerViewModel extends ViewModel implements MR990FingerStrategy.Re
             if (match!=0){
                 match= MR990FingerStrategy.getInstance().getMxFingerAlg().match(finger1, feature, 3);
             }
-            this.match.postValue(new Result("",match==0));
+            this.match.postValue(new Result("",match==0,0L,0L));
             stopRead();
         }else {
 

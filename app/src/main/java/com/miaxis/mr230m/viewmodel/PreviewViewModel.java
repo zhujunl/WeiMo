@@ -48,7 +48,7 @@ public class PreviewViewModel extends ViewModel{
      */
     private synchronized void Process_Rgb(byte[] faceData) {
         if (PhotoFaceFeatureMutableLiveData.getValue()==null){
-            VerifyResult.setValue(new Result("照片未检测到人脸",false));
+            VerifyResult.setValue(new Result("照片未检测到人脸",false,0L,0L));
             return;
         }
         App.getInstance().threadExecutor.execute(new Runnable() {
@@ -84,9 +84,9 @@ public class PreviewViewModel extends ViewModel{
                                     return;
                                 }
                                 MXResult<Float> result = MXFaceIdAPI.getInstance().mxFeatureMatch(featureExtract.getData(),PhotoFaceFeatureMutableLiveData.getValue().getFaceFeature());
-                                if (result.getData()>0.7F){
+                                if (result.getData()>0.1F){
                                     Log.d(TAG, "核验成功==" +result.getData() );
-                                    VerifyResult.postValue(new Result(String.valueOf(result.getData()),true));
+                                    VerifyResult.postValue(new Result(String.valueOf(result.getData()),true,0L,0L));
                                 }
                             }
                         }
