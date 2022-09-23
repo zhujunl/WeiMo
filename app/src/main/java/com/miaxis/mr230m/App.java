@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.miaxis.mr230m.mr990.finger.MR990FingerStrategy;
 import com.miaxis.mr230m.util.mkUtil;
-import com.miaxis.weomosdk.WeiMoFacade;
 
 import org.zz.api.MXFaceIdAPI;
 import org.zz.api.MXResult;
@@ -40,8 +39,6 @@ public class App extends Application {
     }
 
     public MXResult<?> init() {
-//        FaceModel.init();
-//        FingerModel.init();
         mkUtil.init(this);
         Log.e(TAG, "上电" );
         Intent intent = new Intent("com.miaxis.power");
@@ -54,16 +51,16 @@ public class App extends Application {
         i.putExtra("value",true);
         context.sendBroadcast(i);
 
-        WeiMoFacade.init(context, mkUtil.getInstance().decodeString("ip", "192.168.11.183"),
-                mkUtil.getInstance().decodeString("port", "19999"),
-                mkUtil.getInstance().decodeString("userName", "9906240014"), response -> {
-                    if(response.code==0){
-                        Log.e(TAG, "初始化成功" );
-                    }else {
-
-                    }
-                    return false;
-                });
+//        WeiMoFacade.init(context, mkUtil.getInstance().decodeString("ip", "192.168.11.183"),
+//                mkUtil.getInstance().decodeString("port", "19999"),
+//                mkUtil.getInstance().decodeString("userName", "9906240014"), response -> {
+//                    if(response.code==0){
+//                        Log.e(TAG, "初始化成功" );
+//                    }else {
+//
+//                    }
+//                    return false;
+//                });
         MR990FingerStrategy.getInstance().init();
         return MXFaceIdAPI.getInstance().mxInitAlg(this, null, null);
     }

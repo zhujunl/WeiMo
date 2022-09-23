@@ -65,8 +65,8 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode){
                 viewModel.ActiveInfo(jkmIp);
             }else {
-//                viewModel.ActiveInfo(weiIp);
-                viewModel.ActiveInfoTCP();
+                viewModel.ActiveInfo(weiIp);
+//                viewModel.ActiveInfoTCP();
             }
         });
         binding.btnDeactiveinfo.setOnClickListener(v -> {
@@ -75,8 +75,8 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode) {
                 viewModel.ActRel(jkmIp);
             }else {
-//                viewModel.ActRel(weiIp);
-                viewModel.ActRelTCP();
+                viewModel.ActRel(weiIp);
+//                viewModel.ActRelTCP();
             }
         });
         binding.btnOnlineauthinfo.setOnClickListener(v -> {
@@ -85,8 +85,8 @@ public class SettingFragment extends BaseBindingFragment<FragmentSettingBinding>
             if (mode) {
                 viewModel.OnlineAuth(jkmIp);
             }else {
-//                viewModel.OnlineAuth(weiIp);
-                viewModel.OnlineAuthTCP();
+                viewModel.OnlineAuth(weiIp);
+//                viewModel.OnlineAuthTCP();
             }
         });
         binding.btnActiveState.setOnClickListener(v -> {

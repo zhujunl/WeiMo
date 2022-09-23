@@ -102,12 +102,14 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             binding.setCardInfo(idCardRecord);
             this.name.setText(idCardRecord.getName());
             this.number.setText(String.valueOf(idCardRecord.getCardNumber()));
-            this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
-            this.finger1.setText("指纹1：" + Base64.encodeToString(idCardRecord.getFingerprint0(), Base64.DEFAULT));
-            this.finger2.setText("指纹2：" + Base64.encodeToString(idCardRecord.getFingerprint1(), Base64.DEFAULT));
-            this.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
-            fingerModel.setFinger(idCardRecord.getFingerprint0(), idCardRecord.getFingerprint1());
-            setEnabled(true);
+            if (idCardRecord.getFingerprint0()!=null) {
+                this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
+                this.finger1.setText("指纹1：" + Base64.encodeToString(idCardRecord.getFingerprint0(), Base64.DEFAULT));
+                this.finger2.setText("指纹2：" + Base64.encodeToString(idCardRecord.getFingerprint1(), Base64.DEFAULT));
+                this.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
+                fingerModel.setFinger(idCardRecord.getFingerprint0(), idCardRecord.getFingerprint1());
+                setEnabled(true);
+            }
         });
         viewModel.ActiveInfoResult.observe(this, result -> {
             binding.weiTip.setText(result.getMsg());
@@ -123,20 +125,20 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
             clickTime=System.currentTimeMillis();
-            viewModel.UsbReadIDCardMsgVerify();
+            viewModel.UsbReadIDCardMsgVerify(weiIp);
         });
         binding.btnReadFull.setOnClickListener(v -> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
             clickTime=System.currentTimeMillis();
-//            viewModel.UsbReadIDCardMsg( weiIp);
-            viewModel.UsbReadIDCardMsgTCP();
+            viewModel.UsbReadIDCardMsg( weiIp);
+//            viewModel.UsbReadIDCardMsgTCP();
         });
         binding.btnHealthVerify.setOnClickListener(v -> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
             clickTime=System.currentTimeMillis();
-            viewModel.UsbJkm(jkmIp);
+//            viewModel.UsbJkm(jkmIp);
         });
         binding.btnFingerVerify.setOnClickListener(v -> {
             this.result.setText("请按压手指");

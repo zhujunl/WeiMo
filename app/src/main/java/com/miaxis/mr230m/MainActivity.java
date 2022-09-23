@@ -31,6 +31,7 @@ import com.miaxis.mr230m.http.bean.ResponseJKM;
 import com.miaxis.mr230m.http.bean.ResponseOnlineAuth;
 import com.miaxis.mr230m.http.bean.ResponseReportIDInfo;
 import com.miaxis.mr230m.http.net.MyRetrofit;
+import com.zzreader.CardResult;
 import com.zzreader.ConStant;
 import com.zzreader.ZzReader;
 import com.zzreader.zzStringTrans;
@@ -510,10 +511,10 @@ public class MainActivity extends AppCompatActivity {
                 cmd[0]=0x12;
                 cmd[1]= (byte) 0xf3;
             }
-            byte[] bytes = idCardDriver.samCommandZ(cmd);
+            CardResult bytes = idCardDriver.samCommandZ(cmd);
             Log.e(TAG, "透传指令:" + zzStringTrans.hex2str(cmd));
             ShowMessage("SAM透传指令："+ zzStringTrans.hex2str(cmd), false);
-            ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes), true);
+            ShowMessage("SAM透传指令返回："+ zzStringTrans.hex2str(bytes.data), true);
         } catch (Exception e) {
             e.printStackTrace();
             ShowMessage(e.getMessage()+"   错误码： "+ConStant.ERRORCODE_CMD,false);
@@ -588,8 +589,11 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     byte[] cmd= MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
-                    byte[] bytes = idCardDriver.samCommandZ(cmd);
-                    String author=AnalysisTran(bytes);
+                    CardResult r = idCardDriver.samCommandZ(cmd);
+                    if (r.re!=0){
+                        return;
+                    }
+                    String author=AnalysisTran(r.data);
                     Log.e(TAG, "author==" +author );
                     RequestOnlineAuth.Data data = new RequestOnlineAuth.Data();
                     data.setAuthreq(author.trim().replace("\n",""));
@@ -603,8 +607,8 @@ public class MainActivity extends AppCompatActivity {
                         byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
                         byte[] aut= MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                         Log.e(TAG, "authresp_base:" + zzStringTrans.hex2str(authresp_base));
-                        byte[] realBytes = idCardDriver.samCommandZ(aut,authresp_base);
-                        ShowMessage("授权结果："+(realBytes[9]==-112?"成功":"失败"), false);
+                        CardResult realBytes = idCardDriver.samCommandZ(aut,authresp_base);
+                        ShowMessage("授权结果："+(realBytes.re==0?"成功":"失败"), false);
                         //                        ShowMessage("SAM透传指令返回："+zzStringTrans.hex2str(realBytes), true);
                     }
                 } catch (Exception e) {
@@ -620,14 +624,15 @@ public class MainActivity extends AppCompatActivity {
      * */
     public String  getSign(){
         byte[] check= MXDataCode.shortToByteArray(ZzReader.CMD_CHECK);
-        byte[] check_bytes = idCardDriver.samCommandZ(check);
-        if (check_bytes==null){
-            return "";
+        CardResult check_bytes = idCardDriver.samCommandZ(check);
+        if (check_bytes.re!=0){
+            return String.valueOf(check_bytes.re);
         }
-        if (check_bytes[10]==0x01){
+        if (check_bytes.data[10]==0x01){
             byte[] sign= MXDataCode.shortToByteArray(ZzReader.CMD_SIGN);
-            byte[] sign_byte=idCardDriver.samCommandZ(sign);
-            return  AnalysisTran(sign_byte);
+            CardResult sign_byte=idCardDriver.samCommandZ(sign);
+            if (sign_byte.re==0)
+                return  AnalysisTran(sign_byte.data);
         }else{
 
         }
@@ -770,7 +775,7 @@ public class MainActivity extends AppCompatActivity {
                     byte[] c=new byte[50];
                     System.arraycopy(bytes,bytes.length-50,c,0,c.length);
                     if (isUsb){
-                        byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
+                        CardResult bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
                         ShowMessage("激活成功", false);
                     }else {
                         byte[] bytes1 = mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(SerialPortHelper.W_ACTIVEINFO), bytes);
@@ -800,7 +805,7 @@ public class MainActivity extends AppCompatActivity {
                          String deactiveinfo = body.getData().getDeactiveinfo();
                          byte[] bytes = jdkBase64Decode(deactiveinfo.getBytes());
                          if (isUsb){
-                             byte[] bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE),bytes);
+                             CardResult bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE),bytes);
                              ShowMessage("解除激活成功", false);
                          }else {
                              byte[] bytes1 = mSerialPortHelper.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE),bytes);
@@ -825,7 +830,7 @@ public class MainActivity extends AppCompatActivity {
         idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_CHECK));//0XA10C
         idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_FindCARD_CONTROL));//0X2001
         idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_SELECTCARD_CONTROL));//0X2002
-        byte[] bytes = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_INTERNT_READCARD_FACEFINGER), ZzReader.BSENDBUF);//0X3020
+        CardResult bytes = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_INTERNT_READCARD_FACEFINGER), ZzReader.BSENDBUF);//0X3020
     }
 
     public String AnalysisTran(byte[] tran){

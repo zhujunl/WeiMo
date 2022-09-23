@@ -44,8 +44,8 @@ public class DemoActivity extends BaseBindingActivity<ActivityMian2Binding> {
         viewModel.getToken();
         viewModel.isConnect.observe(this, aBoolean -> {
             String weiIp = mkUtil.getInstance().decodeString("weiIp","https://183.129.171.153:8080");
-//            viewModel.ActiveInfoAuto(weiIp);
-            viewModel.ActiveInfoAutoTCP();
+            viewModel.ActiveInfoAuto(weiIp);
+//            viewModel.ActiveInfoAutoTCP();
         });
         ServerManager.getInstance().startRefresh();
     }
