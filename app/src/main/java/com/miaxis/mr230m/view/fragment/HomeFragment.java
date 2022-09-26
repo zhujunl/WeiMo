@@ -37,7 +37,7 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
     String TAG = "HomeFragment";
     TextView result, finger1, finger2, name, time, number;
     ImageView imageIdcard;
-    long clickTime= 0L;
+    long clickTime = 0L;
 
     @Override
     protected int initLayout() {
@@ -87,8 +87,8 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             if (mProgressDialog.isShowing()) {
                 mProgressDialog.cancel();
             }
-            long timeDiff=result.getDeviceTime()-clickTime;
-            this.result.setText("操作结果:" + result.getMsg()+(clickTime==0F?"":"\n读卡耗时："+timeDiff+"毫秒")+(result.getNetTime()==0F?"":"\n联网耗时："+result.getNetTime()+"毫秒"));
+            long timeDiff = result.getDeviceTime() - clickTime;
+            this.result.setText("操作结果:" + result.getMsg() + (clickTime == 0F ? "" : "\n读卡耗时：" + timeDiff + "毫秒") + (result.getNetTime() == 0F ? "" : "\n联网耗时：" + result.getNetTime() + "毫秒"));
         });
         viewModel.IDCardLiveData.observe(this, idCardRecord -> {
             Log.d(TAG, "IDCardLiveData==" + idCardRecord.toString());
@@ -102,13 +102,17 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             binding.setCardInfo(idCardRecord);
             this.name.setText(idCardRecord.getName());
             this.number.setText(String.valueOf(idCardRecord.getCardNumber()));
-            if (idCardRecord.getFingerprint0()!=null) {
-                this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
+            this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
+            if (idCardRecord.getFingerprint0() != null) {
                 this.finger1.setText("指纹1：" + Base64.encodeToString(idCardRecord.getFingerprint0(), Base64.DEFAULT));
                 this.finger2.setText("指纹2：" + Base64.encodeToString(idCardRecord.getFingerprint1(), Base64.DEFAULT));
                 this.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
                 fingerModel.setFinger(idCardRecord.getFingerprint0(), idCardRecord.getFingerprint1());
                 setEnabled(true);
+            }else {
+                this.finger1.setText("");
+                this.finger2.setText("");
+                this.imageIdcard.setImageResource(R.drawable.card);
             }
         });
         viewModel.ActiveInfoResult.observe(this, result -> {
@@ -124,21 +128,21 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
         binding.btnReadVerify.setOnClickListener(v -> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
-            clickTime=System.currentTimeMillis();
+            clickTime = System.currentTimeMillis();
             viewModel.UsbReadIDCardMsgVerify(weiIp);
         });
         binding.btnReadFull.setOnClickListener(v -> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
-            clickTime=System.currentTimeMillis();
-            viewModel.UsbReadIDCardMsg( weiIp);
-//            viewModel.UsbReadIDCardMsgTCP();
+            clickTime = System.currentTimeMillis();
+            viewModel.UsbReadIDCardMsg(weiIp);
+            //            viewModel.UsbReadIDCardMsgTCP();
         });
         binding.btnHealthVerify.setOnClickListener(v -> {
             mProgressDialog.show();
             this.fingerModel.stopRead();
-            clickTime=System.currentTimeMillis();
-//            viewModel.UsbJkm(jkmIp);
+            clickTime = System.currentTimeMillis();
+            //            viewModel.UsbJkm(jkmIp);
         });
         binding.btnFingerVerify.setOnClickListener(v -> {
             this.result.setText("请按压手指");
@@ -149,6 +153,8 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             previewDialog = new PreviewDialog(idCardRecord);
             previewDialog.show(getFragmentManager(), "prewView");
         });
+
+        binding.btnReadFor.setOnClickListener(v -> viewModel.ForRead());
     }
 
 

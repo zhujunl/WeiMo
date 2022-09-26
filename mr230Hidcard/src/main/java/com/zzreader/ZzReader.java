@@ -415,26 +415,24 @@ public class ZzReader
         if (iRet != 159) {
             iRet = this.StartFindIDCard(pucManaInfo);
             if (iRet==128){
-                return new CardResult(ConStant.ERRORCODE_NOCARD,null);
+                return new CardResult(iRet,null);
             }
             if (iRet != 159) {
-                Log.d(TAG, "StartFindIDCard:"+iRet);
-                return new CardResult( ConStant.ERRCODE_READCARD,null);
+                return new CardResult(iRet,null);
             }
         }
         this.SendMsg("SelectIDCard");
         iRet = this.SelectIDCard(pucManaInfo);
         if (iRet != 144) {
             this.SendMsg("SelectIDCard iRet=" + iRet);
-            return new CardResult(ConStant.ERRCODE_READCARD,null);
+            return new CardResult(iRet,null);
         }
         this.SendMsg("ReadFullMsgUnicode");
         CardResult re = this.ReadBaseMsgUnicode();
-        if (iRet != 144) {
-            Log.d(TAG, "ReadFullMsgUnicode:"+iRet);
+        if (re.re!=0) {
             this.SendMsg("ReadBaseMsgUnicode,iRet=" + iRet);
             this.AntControl(0);
-            return new CardResult(iRet,null);
+            return re;
         }
         this.SendMsg("AntControl(0)");
         this.AntControl(0);

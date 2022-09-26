@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="微模自动授权成功"/>
+                android:text=""/>
             <TextView
                  android:visibility="gone"
                 android:id="@+id/fingerTip"
@@ -93,7 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="读取核验信息"
+            android:text="读取证件信息"
             app:layout_constraintTop_toTopOf="@id/cardMsg"
             app:layout_constraintBottom_toBottomOf="@id/cardMsg"
             app:layout_constraintStart_toStartOf="parent"/>
@@ -267,6 +267,15 @@
             android:text="    核验指纹    "
             app:layout_constraintTop_toBottomOf="@id/btnFaceVerify"
             app:layout_constraintStart_toStartOf="@id/btnFaceVerify"/>
+
+        <Button
+            android:visibility="invisible"
+            android:id="@+id/btnReadFor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="    循环读卡    "
+            app:layout_constraintTop_toBottomOf="@id/btnFingerVerify"
+            app:layout_constraintStart_toStartOf="@id/btnFingerVerify"/>
 
         <TextView
             android:id="@+id/result"
