@@ -465,7 +465,7 @@ public class ZzReader
         if (re.re!=0) {
             this.SendMsg("ReadBaseMsgUnicode,iRet=" + iRet);
             this.AntControl(0);
-            return new CardResult(iRet,null);
+            return re;
         }
         this.SendMsg("AntControl(0)");
         this.AntControl(0);

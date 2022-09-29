@@ -266,7 +266,7 @@ public class DemoViewModel extends ViewModel {
                     byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                     CardResult realBytes = idCardDriver.samCommandZ(aut, authresp_base);
                     long l3 = System.currentTimeMillis();
-                    ShowMessage("授权结果：" + (realBytes.re == 0 ? "成功" : "失败" + realBytes.re), false, l2 - l, l + l3 - l2);
+                    ShowMessage("授权结果：" + (realBytes.re == 0 ? (realBytes.data[9]==(byte)0x90?"成功": "授权失败" + realBytes.data[9]): "失败" + realBytes.re), false, l2 - l, l + l3 - l2);
                 } catch (Exception e) {
                     e.printStackTrace();
                     ShowMessage(e.getMessage() + "   错误码： " + ConStant.ERRORCODE_CMD, false, 0L, System.currentTimeMillis());
@@ -592,25 +592,28 @@ public class DemoViewModel extends ViewModel {
                     byte[] bytes = jdkBase64Decode(activeinfo.getBytes());
                     CardResult bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
                     if (bytes1.re == 0) {
-                        getSign();
-                        byte[] cmd = MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
-                        CardResult autnor = idCardDriver.samCommandZ(cmd);
-                        if (autnor.re != 0) {
-                            return;
+                        String sign = getSign();
+                        if (!TextUtils.isEmpty(sign)){
+                            byte[] cmd = MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
+                            CardResult autnor = idCardDriver.samCommandZ(cmd);
+                            if (autnor.re != 0) {
+                                return;
+                            }
+                            String author = AnalysisTran(autnor.data).trim().replace("\n", "");
+                            WRequestOnlineauthInfo wRequestOnlineauthInfo = new WRequestOnlineauthInfo(cid, mdeviceid, samid, encodeBusiness(cid, samid, "onlineauthinfo"), author);
+                            Response<WResponseOnlineauthInfo> executeOnlinea = MiaxisRetrofit.getApiService(ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
+                            if (executeOnlinea.body().getCode() == 200) {
+                                String authresp = executeOnlinea.body().getData().getAuthresp();
+                                byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
+                                byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
+                                CardResult realBytes = idCardDriver.samCommandZ(aut, authresp_base);
+                                ActiveInfoResult.postValue(new Result(realBytes.re == 0  ?(realBytes.data[9]==(byte)0x90?"微模自动授权成功": "微模授权失败" + realBytes.data[9]) : "微模自动授权失败" + realBytes.re, false, 0L, System.currentTimeMillis()));
+                            } else {
+                                ActiveInfoResult.postValue(new Result("微模自动授权失败," + execute.body().getMsg(), false, 0L, System.currentTimeMillis()));
+                            }
+                        }else {
+                            ActiveInfoResult.postValue(new Result("获取证书失败", false, 0L, System.currentTimeMillis()));
                         }
-                        String author = AnalysisTran(autnor.data).trim().replace("\n", "");
-                        WRequestOnlineauthInfo wRequestOnlineauthInfo = new WRequestOnlineauthInfo(cid, mdeviceid, samid, encodeBusiness(cid, samid, "onlineauthinfo"), author);
-                        Response<WResponseOnlineauthInfo> executeOnlinea = MiaxisRetrofit.getApiService(ip).OnlineauthInfo(wRequestOnlineauthInfo).execute();
-                        if (executeOnlinea.body().getCode() == 200) {
-                            String authresp = executeOnlinea.body().getData().getAuthresp();
-                            byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
-                            byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
-                            CardResult realBytes = idCardDriver.samCommandZ(aut, authresp_base);
-                            ActiveInfoResult.postValue(new Result(realBytes.re == 0 ? "微模自动授权成功" : "微模自动授权失败" + realBytes.re, false, 0L, System.currentTimeMillis()));
-                        } else {
-                            ActiveInfoResult.postValue(new Result("微模自动授权失败," + execute.body().getMsg(), false, 0L, System.currentTimeMillis()));
-                        }
-
                     }else{
                         ActiveInfoResult.postValue(new Result("激活信息写入失败,  " + bytes1.re, false, 0L, System.currentTimeMillis()));
                     }

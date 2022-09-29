@@ -62,7 +62,7 @@ public class ServerManager {
     private void refresh() {
         try {
             handler.removeMessages(0);
-            String ip= mkUtil.getInstance().decodeString("weiIp", "");
+            String ip= mkUtil.getInstance().decodeString("weiIp", "https://183.129.171.153:8080");
             if (TextUtils.isEmpty(ip)){
                 return;
             }

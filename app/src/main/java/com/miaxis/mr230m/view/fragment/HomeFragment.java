@@ -103,12 +103,12 @@ public class HomeFragment extends BaseBindingFragment<FragmentHomeBinding> {
             this.name.setText(idCardRecord.getName());
             this.number.setText(String.valueOf(idCardRecord.getCardNumber()));
             this.time.setText(idCardRecord.getValidateStart() + "——" + idCardRecord.getValidateEnd());
+            setEnabled(idCardRecord.getFingerprint0() != null);
             if (idCardRecord.getFingerprint0() != null) {
                 this.finger1.setText("指纹1：" + Base64.encodeToString(idCardRecord.getFingerprint0(), Base64.DEFAULT));
                 this.finger2.setText("指纹2：" + Base64.encodeToString(idCardRecord.getFingerprint1(), Base64.DEFAULT));
                 this.imageIdcard.setImageBitmap(idCardRecord.getCardBitmap());
                 fingerModel.setFinger(idCardRecord.getFingerprint0(), idCardRecord.getFingerprint1());
-                setEnabled(true);
             }else {
                 this.finger1.setText("");
                 this.finger2.setText("");
