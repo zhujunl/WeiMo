@@ -404,7 +404,7 @@ public class ZzReader
      * 读取身份证基本数据
      * @return 0成功，其他失败
      * */
-    public synchronized CardResult readIDCardBaseMsgZ(){
+    public synchronized CardResult readIDCardBaseMsgZ(int[] count){
         this.SendMsg("========================");
         this.SendMsg("mxReadCardFullInfo");
         int iRet = ConStant.ERRCODE_SUCCESS;
@@ -428,7 +428,7 @@ public class ZzReader
             return new CardResult(iRet,null);
         }
         this.SendMsg("ReadFullMsgUnicode");
-        CardResult re = this.ReadBaseMsgUnicode();
+        CardResult re = this.ReadBaseMsgUnicode(count);
         if (re.re!=0) {
             this.SendMsg("ReadBaseMsgUnicode,iRet=" + iRet);
             this.AntControl(0);
@@ -441,7 +441,7 @@ public class ZzReader
     }
 
 
-    public synchronized CardResult readIDCardMsgZ( byte[] photo, byte[] fpimg){
+    public synchronized CardResult readIDCardMsgZ( byte[] photo, byte[] fpimg,int[] count){
         this.SendMsg("========================");
         this.SendMsg("mxReadCardForJkm");
         int iRet = ConStant.ERRCODE_SUCCESS;
@@ -461,7 +461,7 @@ public class ZzReader
             return new CardResult(iRet,null);
         }
         this.SendMsg("ReadFullMsgUnicode");
-        CardResult re = this.ReadFullForFullMsgUnicode(photo,fpimg);
+        CardResult re = this.ReadFullForFullMsgUnicode(photo,fpimg,count);
         if (re.re!=0) {
             this.SendMsg("ReadBaseMsgUnicode,iRet=" + iRet);
             this.AntControl(0);
@@ -1041,7 +1041,7 @@ public class ZzReader
         return result[0];
     }
 
-    CardResult ReadBaseMsgUnicode() {
+    CardResult ReadBaseMsgUnicode(int[] count) {
         int lRV = ConStant.ERRCODE_SUCCESS;
         final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oPackLen = { oPackDataBuffer.length };
@@ -1080,6 +1080,10 @@ public class ZzReader
         }
         int len=a*256+b;
         byte[] data=new byte[len+152];
+        count[0]=oPackDataBuffer[0];
+        if (count[0]<0){
+            count[0]+=256;
+        }
         System.arraycopy(oPackDataBuffer,1,data,0,data.length);
         return new CardResult(lRV,data);
     }
@@ -1214,7 +1218,7 @@ public class ZzReader
         return data;
     }
 
-    CardResult ReadFullForFullMsgUnicode(byte[] photo,byte[] finger) {
+    CardResult ReadFullForFullMsgUnicode(byte[] photo,byte[] finger,int[] count) {
         int lRV = ConStant.ERRCODE_SUCCESS;
         final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
         final int[] oPackLen = { oPackDataBuffer.length };
@@ -1253,6 +1257,10 @@ public class ZzReader
         }
         int len=a*256+b;
         byte[] data=new byte[len+184];
+        count[0]=oPackDataBuffer[0];
+        if (count[0]<0){
+            count[0]+=256;
+        }
         System.arraycopy(oPackDataBuffer,1,data,0,data.length);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4,photo,0,photo.length);
         System.arraycopy(oPackDataBuffer,89+len+32+64+4+1024,finger,0,finger.length);

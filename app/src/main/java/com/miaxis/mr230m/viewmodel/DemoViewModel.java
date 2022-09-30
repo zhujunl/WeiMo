@@ -126,7 +126,12 @@ public class DemoViewModel extends ViewModel {
         App.getInstance().threadExecutor.execute(() -> {
             IDCardRecord idCardRecord = new IDCardRecord();
             try {
-                CardResult r = idCardDriver.readIDCardBaseMsgZ();
+                 int[] count = { 0 };
+                CardResult r = idCardDriver.readIDCardBaseMsgZ(count);
+                Log.e(TAG, "剩余次数==" + count[0]);
+                if (count[0] < 10) {
+                    OnlineAuth(ip);
+                }
                 long s = System.currentTimeMillis();
                 String samid = mkUtil.getInstance().decodeString("samid");
                 String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
@@ -183,7 +188,8 @@ public class DemoViewModel extends ViewModel {
                 byte[] fpimg = new byte[1024];
                 byte[] start = new byte[16];
                 byte[] end = new byte[16];
-                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg);
+                int[] count = {0};
+                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg, count);
                 if (jkm.re != 0) {
                     ShowMessage("读卡失败，请重新读取" + jkm.re, false, 0L, System.currentTimeMillis());
                     return;
@@ -207,6 +213,9 @@ public class DemoViewModel extends ViewModel {
 
                 String framedata = jdkBase64Encode(jkm.data);
                 String samsigncert = mkUtil.getInstance().decodeString("sign");
+                if (count[0]<10){
+                    OnlineAuth(ip);
+                }
                 long s = System.currentTimeMillis();
                 WRequestIdInfo wRequestIdInfo = new WRequestIdInfo(cid, mdeviceid, samid, encodeBusiness(cid, samid, "idinfo"), framedata, samsigncert);
                 Response<WResponseIdInfo> execute = MiaxisRetrofit.getApiService(ip).IdInfo(wRequestIdInfo).execute();
@@ -266,7 +275,7 @@ public class DemoViewModel extends ViewModel {
                     byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                     CardResult realBytes = idCardDriver.samCommandZ(aut, authresp_base);
                     long l3 = System.currentTimeMillis();
-                    ShowMessage("授权结果：" + (realBytes.re == 0 ? (realBytes.data[9]==(byte)0x90?"成功": "授权失败" + realBytes.data[9]): "失败" + realBytes.re), false, l2 - l, l + l3 - l2);
+                    ShowMessage("授权结果：" + (realBytes.re == 0 ? (realBytes.data[9] == (byte) 0x90 ? "成功" : "授权失败" + realBytes.data[9]) : "失败" + realBytes.re), false, l2 - l, l + l3 - l2);
                 } catch (Exception e) {
                     e.printStackTrace();
                     ShowMessage(e.getMessage() + "   错误码： " + ConStant.ERRORCODE_CMD, false, 0L, System.currentTimeMillis());
@@ -336,7 +345,8 @@ public class DemoViewModel extends ViewModel {
             try {
                 byte[] photo = new byte[1024];
                 byte[] fpimg = new byte[1024];
-                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg);
+                int[] count = {0};
+                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg, count);
                 String framedata = jdkBase64Encode(jkm.data);
                 String samsigncert = getSign();
                 DataJkm dataJkm = new DataJkm(framedata, samsigncert);
@@ -593,7 +603,7 @@ public class DemoViewModel extends ViewModel {
                     CardResult bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACTIVEINFO), bytes);
                     if (bytes1.re == 0) {
                         String sign = getSign();
-                        if (!TextUtils.isEmpty(sign)){
+                        if (!TextUtils.isEmpty(sign)) {
                             byte[] cmd = MXDataCode.shortToByteArray(ZzReader.CMD_APPLY_AUTHORIZATION);
                             CardResult autnor = idCardDriver.samCommandZ(cmd);
                             if (autnor.re != 0) {
@@ -607,14 +617,14 @@ public class DemoViewModel extends ViewModel {
                                 byte[] authresp_base = jdkBase64Decode(authresp.getBytes());
                                 byte[] aut = MXDataCode.shortToByteArray(ZzReader.CMD_AUTHORIZATION);
                                 CardResult realBytes = idCardDriver.samCommandZ(aut, authresp_base);
-                                ActiveInfoResult.postValue(new Result(realBytes.re == 0  ?(realBytes.data[9]==(byte)0x90?"微模自动授权成功": "微模授权失败" + realBytes.data[9]) : "微模自动授权失败" + realBytes.re, false, 0L, System.currentTimeMillis()));
+                                ActiveInfoResult.postValue(new Result(realBytes.re == 0 ? (realBytes.data[9] == (byte) 0x90 ? "微模自动授权成功" : "微模授权失败" + realBytes.data[9]) : "微模自动授权失败" + realBytes.re, false, 0L, System.currentTimeMillis()));
                             } else {
                                 ActiveInfoResult.postValue(new Result("微模自动授权失败," + execute.body().getMsg(), false, 0L, System.currentTimeMillis()));
                             }
-                        }else {
+                        } else {
                             ActiveInfoResult.postValue(new Result("获取证书失败", false, 0L, System.currentTimeMillis()));
                         }
-                    }else{
+                    } else {
                         ActiveInfoResult.postValue(new Result("激活信息写入失败,  " + bytes1.re, false, 0L, System.currentTimeMillis()));
                     }
                 } else {
@@ -862,7 +872,8 @@ public class DemoViewModel extends ViewModel {
                 byte[] fpimg = new byte[1024];
                 byte[] start = new byte[16];
                 byte[] end = new byte[16];
-                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg);
+                int[] count = {0};
+                CardResult jkm = idCardDriver.readIDCardMsgZ(photo, fpimg, count);
                 if (jkm == null) {
                     ShowMessage("读卡失败，请重新读取", false, 0L, System.currentTimeMillis());
                     return;
