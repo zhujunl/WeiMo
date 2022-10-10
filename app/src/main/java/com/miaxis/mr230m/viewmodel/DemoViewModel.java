@@ -128,15 +128,15 @@ public class DemoViewModel extends ViewModel {
             try {
                  int[] count = { 0 };
                 CardResult r = idCardDriver.readIDCardBaseMsgZ(count);
-                Log.e(TAG, "剩余次数==" + count[0]);
-                if (count[0] < 10) {
-                    OnlineAuth(ip);
-                }
                 long s = System.currentTimeMillis();
                 String samid = mkUtil.getInstance().decodeString("samid");
                 String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
                 String mdeviceid = mkUtil.getInstance().decodeString("mdeviceid", null);
                 if (r.re == 0) {
+                    Log.e(TAG, "剩余次数==" + count[0]);
+                    if (count[0] < 10) {
+                        OnlineAuth(ip);
+                    }
                     String framedata = jdkBase64Encode(r.data);
                     byte[] start = new byte[16];
                     byte[] end = new byte[16];
@@ -169,6 +169,55 @@ public class DemoViewModel extends ViewModel {
             }
         });
     }
+
+    public void UsbReadIDCardMsgMultipe(String ip) {
+        App.getInstance().threadExecutor.execute(() -> {
+            IDCardRecord idCardRecord = new IDCardRecord();
+            try {
+                int[] count={0};
+                CardResult r = idCardDriver.readIdCardMsg(count);
+                long s = System.currentTimeMillis();
+                String samid = mkUtil.getInstance().decodeString("samid");
+                String cid = mkUtil.getInstance().decodeString("cid", "226062ee9fba4316ac0357f86de259a3");
+                String mdeviceid = mkUtil.getInstance().decodeString("mdeviceid", null);
+                if (r.re == 0) {
+                    Log.e(TAG, "剩余次数==" + count[0]);
+                    if (count[0] < 10) {
+                        OnlineAuth(ip);
+                    }
+                    String framedata = jdkBase64Encode(r.data);
+                    byte[] start = new byte[16];
+                    byte[] end = new byte[16];
+                    System.arraycopy(r.data, 38, start, 0, start.length);
+                    System.arraycopy(r.data, 54, end, 0, end.length);
+                    String samsigncert = mkUtil.getInstance().decodeString("sign");
+                    WRequestIdInfo wRequestIdInfo = new WRequestIdInfo(cid, mdeviceid, samid, encodeBusiness(cid, samid, "idinfo"), framedata, samsigncert);
+                    Response<WResponseIdInfo> execute = MiaxisRetrofit.getApiService(ip).IdInfo(wRequestIdInfo).execute();
+                    WResponseIdInfo body = execute.body();
+                    long time = System.currentTimeMillis() - s;
+                    if (body.getCode() == 200) {
+                        String idtype = IdCardParser.unicode2String(jdkBase64Decode(body.getData().getIdtype().getBytes()));
+                        String name = IdCardParser.unicode2String(jdkBase64Decode(idtype.equals("I") ? body.getData().getEnglishname().getBytes() : body.getData().getChinesename().getBytes()));
+                        String idnumber = IdCardParser.unicode2String(jdkBase64Decode(body.getData().getIdnumber().getBytes()));
+                        idCardRecord.setName(name);
+                        idCardRecord.setCardNumber(idnumber);
+                        idCardRecord.setValidateStart(IdCardParser.unicode2String(start));
+                        idCardRecord.setValidateEnd(IdCardParser.unicode2String(end));
+                        IDCardLiveData.postValue(idCardRecord);
+                        ShowMessage("读卡请求成功", false, time, s);
+                    } else {
+                        ShowMessage("读卡请求失败," + body.getMsg(), false, time, s);
+                    }
+                } else {
+                    ShowMessage("读卡失败," + r.re, false, 0, s);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ShowMessage("读卡失败," + e.getMessage(), false, 0L, System.currentTimeMillis());
+            }
+        });
+    }
+
 
     public void UsbReadIDCardMsg(String ip) {
         App.getInstance().threadExecutor.execute(() -> {
