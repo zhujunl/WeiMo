@@ -543,7 +543,7 @@ public class ZzReader
         return new CardResult(lRV,out);
     }
 
-    public CardResult samCommandZ(byte[] cmd,byte[] bSendBuf){
+    public synchronized CardResult samCommandZ(byte[] cmd,byte[] bSendBuf){
         int lRV = ConStant.ERRCODE_SUCCESS;
         byte[] out=new byte[ConStant.CMD_BUFSIZE];
         final byte[] oPackDataBuffer = new byte[ConStant.CMD_BUFSIZE];
@@ -1600,7 +1600,7 @@ public class ZzReader
             System.arraycopy(outBuffer, 0, lpRecvData, 0, realsize);
             io_wRecvLength[0] = realsize;
         }
-        this.m_usbBase.closeDev();
+//        this.m_usbBase.closeDev();
         return ConStant.ERRCODE_SUCCESS;
     }
 

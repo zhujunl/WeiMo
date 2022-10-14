@@ -497,7 +497,7 @@ public class DemoViewModel extends ViewModel {
                 byte[] bytes = jdkBase64Decode(deactiveinfo.getBytes());
                 CardResult bytes1 = idCardDriver.samCommandZ(MXDataCode.shortToByteArray(ZzReader.CMD_ACT_RELIVE), bytes);
                 long l3 = System.currentTimeMillis();
-                if (bytes1.re != 0) {
+                if (bytes1.re == 0) {
                     ShowMessage("解除激活成功", false, l2 - l, l3 - 2);
                 } else {
                     ShowMessage("解除激活失败   " + bytes1.re, false, l2 - l, l3 - 2);

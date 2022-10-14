@@ -144,6 +144,9 @@ public class UsbBase
         if (this.m_ctx == null) {
             return -1001;
         }
+        if(this.m_connection!=null){
+            return 0;
+        }
         final UsbManager usbManager = (UsbManager)this.m_ctx.getSystemService("usb");
         final HashMap<String, UsbDevice> map = (HashMap<String, UsbDevice>)usbManager.getDeviceList();
         for (final UsbDevice device : map.values()) {
